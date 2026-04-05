@@ -1,0 +1,59 @@
+services:
+  postgresql:
+    image: postgres:17
+    container_name: jncard-postgres
+    environment:
+      POSTGRES_DB: jncardsearch
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jncard-network
+
+  redis:
+    image: redis:7.4
+    container_name: jncard-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jncard-network
+
+  elasticsearch:
+    image: elasticsearch:8.19.0
+    container_name: jncard-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - jncard-network
+
+  kibana:
+    image: kibana:8.19.0
+    container_name: jncard-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - jncard-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  es_data:
+
+networks:
+  jncard-network:
+    driver: bridge
