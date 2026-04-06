@@ -2,8 +2,11 @@ package com.esstudy.jncardsearch;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+//시큐리티 비활성화
+@SpringBootApplication(exclude = {
+SecurityAutoConfiguration.class
+})
 public class JncardsearchApplication {
 
 	public static void main(String[] args) {
