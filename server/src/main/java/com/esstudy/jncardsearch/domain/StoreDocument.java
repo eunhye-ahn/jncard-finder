@@ -43,6 +43,9 @@ public class StoreDocument {
     @Id
     private String id; //UUID 자동생성
 
+    @Field(type = FieldType.Keyword)
+    private String storeId; //키워드는 문자열 기반
+
     @Field(type= FieldType.Text, analyzer = "nori")
     private String storeName;
 

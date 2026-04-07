@@ -80,6 +80,7 @@ public class StoreService {
 
     //ES 쿼리 빌드
     private NativeQuery buildQuery(StoreSearchRequest request) {
+        System.out.println(request.toString());
         return NativeQuery.builder()
                 .withQuery(q -> q       //es쿼리 시작
                         .bool(b-> {     //bool쿼리 시작 - 조건묶음
@@ -99,7 +100,8 @@ public class StoreService {
                                                     .value(request.getSido())));
                                 }
                                 //검색없으면 전체조회
-                                else{
+                                if(!StringUtils.hasText(request.getQ()) && !StringUtils.hasText(request.getSido()))
+                                {
                                     b.must(m->m.matchAll(ma->ma));
                                 }
                                 return b;
@@ -112,7 +114,7 @@ public class StoreService {
                                 : null)
                 .withSort(Sort.by(
                         Sort.Order.desc("_score"),
-                        Sort.Order.asc("_id")
+                        Sort.Order.asc("storeId")
                 ))
                 //offset은 page가 의미있음
                 //cursor는 시작위치를 0고정, <- 커서담당으로 정하므로-withSearchAfter

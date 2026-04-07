@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * [WHAT] 파싱한 데이터 ES에 저장
@@ -43,7 +44,7 @@ public class ExcelStoreLoader {
     public void loadStores(String filePath) throws IOException {
 
         // 순서보장, 중복저장허용
-        List<StoreDocument> stores = new ArrayList<>();
+        List<Store> stores = new ArrayList<>();
 
         // 파일 읽기
         try (InputStream is = getClass().getResourceAsStream(filePath);
@@ -52,42 +53,42 @@ public class ExcelStoreLoader {
             Sheet sheet = workbook.getSheet("광주은행");
 
             // 엑셀 행 읽기
-            for (int i = 4; i <= sheet.getLastRowNum(); i++) {
+            for (int i = 3; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
-                // 엑셀 행 데이터 > StoreDocument 변환
-                StoreDocument store = StoreDocument.builder()
-                        .sido(getCellValue(row, 2))
-                        .storeName(getCellValue(row, 3))
-                        .address(getCellValue(row, 4))
-                        .category(getCellValue(row, 5))
-                        // 자동완성 => Completion 타입에 미리 저장해두어야 함
-                        .storeNameSuggest(new Completion(new String[]{getCellValue(row, 3)}))
-                        // 리뷰 작성되면 업데이트
-                        .avgRating(0.0f)
-                        .reviewCount(0)
+                //저장 순서 엑셀파싱>rdb저장>es저장 : rdb의 생성된 id를
+                // es의 storeId(정렬용/rdb연결용)에 저장하기위해
+                Store store = Store.builder()
+                                .sido(getCellValue(row, 1))
+                                .storeName(getCellValue(row, 3))
+                                .address(getCellValue(row, 4))
+                                .category(getCellValue(row, 5))
+                                // 리뷰 작성되면 업데이트
+                                .avgRating(0.0f)
+                                .reviewCount(0)
                         .build();
-
                 stores.add(store);
             }
+            storeRepository.saveAll(stores);
+            log.info("DB 저장 완료 : {}건", stores.size());
+
+            // es에 저장
+            List<StoreDocument> storeEs = stores.stream()
+                    .map(s-> StoreDocument.builder()
+                            .storeId(s.getId().toString())
+                            .storeName(s.getStoreName())
+                            .sido(s.getSido())
+                            .address(s.getAddress())
+                            .category(s.getCategory())
+                            .avgRating(s.getAvgRating())
+                            .reviewCount(s.getReviewCount())
+                            .build()
+                    )
+                    .toList();
+            storeSearchRepository.saveAll(storeEs);
+            log.info("ES 저장 완료 : {}건", storeEs.size());
         }
-
-        //document > entity 로 변환
-        List<Store> storeEntities = stores.stream()
-                .map(storeEntity -> Store.builder()
-                        .storeName(storeEntity.getStoreName())
-                        .sido(storeEntity.getSido())
-                        .address(storeEntity.getAddress())
-                        .category(storeEntity.getCategory())
-                        .avgRating(storeEntity.getAvgRating())
-                        .reviewCount(storeEntity.getReviewCount())
-                        .build()
-                ).toList();
-
-        storeSearchRepository.saveAll(stores);
-        storeRepository.saveAll(storeEntities);
-        log.info("ES 저장 완료 : {}건", stores.size());
     }
 
     private String getCellValue(Row row, int column) {
