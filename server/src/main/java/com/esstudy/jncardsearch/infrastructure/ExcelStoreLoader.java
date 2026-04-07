@@ -1,6 +1,8 @@
 package com.esstudy.jncardsearch.infrastructure;
 
+import com.esstudy.jncardsearch.domain.Store;
 import com.esstudy.jncardsearch.domain.StoreDocument;
+import com.esstudy.jncardsearch.repository.StoreRepository;
 import com.esstudy.jncardsearch.repository.StoreSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ public class ExcelStoreLoader {
 
     // ES 저장소 주입 -> 파싱한 데이터를 ES에 저장하기 위해
     private final StoreSearchRepository storeSearchRepository;
+    private final StoreRepository storeRepository;
 
     public void loadStores(String filePath) throws IOException {
 
@@ -70,7 +73,20 @@ public class ExcelStoreLoader {
             }
         }
 
+        //document > entity 로 변환
+        List<Store> storeEntities = stores.stream()
+                .map(storeEntity -> Store.builder()
+                        .storeName(storeEntity.getStoreName())
+                        .sido(storeEntity.getSido())
+                        .address(storeEntity.getAddress())
+                        .category(storeEntity.getCategory())
+                        .avgRating(storeEntity.getAvgRating())
+                        .reviewCount(storeEntity.getReviewCount())
+                        .build()
+                ).toList();
+
         storeSearchRepository.saveAll(stores);
+        storeRepository.saveAll(storeEntities);
         log.info("ES 저장 완료 : {}건", stores.size());
     }
 
@@ -80,7 +96,7 @@ public class ExcelStoreLoader {
 
         return switch (cell.getCellType()) {
             case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf(cell.getNumericCellValue());
+            case NUMERIC -> String.valueOf((long)cell.getNumericCellValue());
             default -> "";
         };
     }

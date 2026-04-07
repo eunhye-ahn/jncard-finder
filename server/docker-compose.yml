@@ -3,7 +3,7 @@ services:
     image: postgres:17
     container_name: jncard-postgres
     environment:
-      POSTGRES_DB: jncardsearch
+      POSTGRES_DB: jncard_finder
       POSTGRES_USER: root
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:

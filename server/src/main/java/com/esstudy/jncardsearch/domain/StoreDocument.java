@@ -1,6 +1,6 @@
 package com.esstudy.jncardsearch.domain;
 
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,7 +41,7 @@ import org.springframework.data.elasticsearch.core.suggest.Completion;
 @Builder
 public class StoreDocument {
     @Id
-    private String id; //ES가 자동주입
+    private String id; //UUID 자동생성
 
     @Field(type= FieldType.Text, analyzer = "nori")
     private String storeName;
