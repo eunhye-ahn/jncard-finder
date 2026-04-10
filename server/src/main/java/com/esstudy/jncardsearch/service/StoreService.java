@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.esstudy.jncardsearch.domain.StoreDocument;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
 import com.esstudy.jncardsearch.dto.StoreSearchResponse;
+import com.esstudy.jncardsearch.exception.CustomException;
+import com.esstudy.jncardsearch.exception.ErrorCode;
 import com.esstudy.jncardsearch.repository.StoreSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,17 @@ import java.util.List;
  * > hits.getSearchHits() 로 List<SearchHit> 꺼냄
  * > 각 hit에서 getContent()로 StoreDocument 꺼냄
  * > DTO로 변환해서 응답
+ *
+ * [cursor 흐름]
+ * 1페이지 요청
+ * → cursor 없음 → 처음부터 조회
+ * → 마지막 문서 정렬값 → encodeCursor
+ * → cursor: "WyIxLjAiLCAiMTIzIl0=" 응답
+ *
+ * 2페이지 요청
+ * → cursor: "WyIxLjAiLCAiMTIzIl0=" 전달
+ * → decodeCursor → ["1.0", "123"]
+ * → search_after에 넣어서 다음 데이터 조회
  */
 @Service
 @RequiredArgsConstructor
@@ -62,7 +75,7 @@ public class StoreService {
         //dto변환
         List<StoreSearchResponse.StoreDto> storeDtos = hitList.stream()
                 .map(hit -> StoreSearchResponse.StoreDto.builder()
-                        .id(hit.getContent().getId())
+                        .storeId(hit.getContent().getStoreId())
                         .storeName(hit.getContent().getStoreName())
                         .sido(hit.getContent().getSido())
                         .address(hit.getContent().getAddress())
@@ -86,14 +99,14 @@ public class StoreService {
                         .bool(b-> {     //bool쿼리 시작 - 조건묶음
                             //검색어 -> storeName, address => text
                                 if(StringUtils.hasText(request.getQ())){
-                                    //검색어(점수반영)
+                                    //검색어(점수반영) must type -> multiMatch쿼리로 작성
                                     b.must(m->m
                                             .multiMatch(mm -> mm
                                                     .query(request.getQ())
                                                     .fields("storeName","address","category")));
                                 }
                                 if(StringUtils.hasText(request.getSido())){
-                                    //시군필터(점수무관)
+                                    //시군필터(점수무관) filter type -> term쿼리로 작성
                                     b.filter(f->f
                                             .term(t->t
                                                     .field("sido")
@@ -124,22 +137,30 @@ public class StoreService {
     }
 
     //시작위치 설정
+    //클라이언트가 보낸 url => cursor="문자열"
+    //디코딩해서 json으로 변환
+    //json파싱해서 배열로 생성 > searchAfter에 넣기 위해 - ES가 인식할 수 있는,
     private List<Object> decodeCursor(String cursor) {
         //base644디코딩
-        String decoded = new String(Base64.getDecoder().decode(cursor));
-
-        //문자열변환
-        String[] parts = decoded.split(",");
-
-        return List.of(
-               Double.parseDouble(parts[0]),
-               parts[1]
-        );
+        try {
+            String decoded = new String(Base64.getDecoder().decode(cursor));
+            //문자열변환
+            String[] parts = decoded.split(",");
+            return List.of(
+                    Double.parseDouble(parts[0]), //string->double
+                    Long.parseLong(parts[1]) //string->long
+            );
+        }catch(Exception e){
+            throw new CustomException(ErrorCode.INVALID_CURSOR);
+        }
     }
 
     //base64인코딩
+    //search_after 값 : ["_score", "keyword"] 같은 배열
+    //클라에 전달하기 위해 json 변환
+    //url로 전달하기 불편 -> 인코딩해서 문자열로 변환
     private String encodeCursor(SearchHit<StoreDocument> lastHit) {
-        String raw = lastHit.getScore()+","+lastHit.getContent().getId();
+        String raw = lastHit.getScore()+","+lastHit.getContent().getStoreId();
         return Base64.getEncoder().encodeToString(raw.getBytes());
     }
 }

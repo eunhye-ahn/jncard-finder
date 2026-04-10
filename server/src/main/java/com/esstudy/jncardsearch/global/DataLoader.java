@@ -1,6 +1,7 @@
 package com.esstudy.jncardsearch.global;
 
 import com.esstudy.jncardsearch.infrastructure.ExcelStoreLoader;
+import com.esstudy.jncardsearch.repository.StoreRepository;
 import com.esstudy.jncardsearch.repository.StoreSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,12 @@ import org.springframework.stereotype.Component;
 public class DataLoader implements ApplicationRunner {
     private final ExcelStoreLoader excelStoreLoader;
     private final StoreSearchRepository storeSearchRepository;
+    private final StoreRepository storeRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         //중복저장방지
-        if(storeSearchRepository.count() > 0) {
+        if(storeSearchRepository.count() > 0 && storeRepository.count() > 0) {
             log.info("Almost ES data in");
             return;
         }

@@ -32,6 +32,18 @@ import java.util.stream.Collectors;
  * 이미지 → InputStream + ImageIO
  */
 
+/**
+ * xlsx 파일
+ * = zip 압축파일이라 내부에 xml파일들이 있음
+ *      -> xml은 기본적으로 utf-8 인코딩
+ * POI의 역할
+ *  Workbook workbook = new XSSFWorkbook(is))
+ *         -> 내부적으로 xml파싱 + utf-8 디코딩 자동 처리
+ *         -> 개발할때 cell.getStringCellValue()만 호출하면 됨
+ *  new InputStreamReader(fis, "UTF-8") //개발자가 인코딩 직접 처리
+ *  new XSSWorkbook(is) //라이브러리가 알아서 처리
+ */
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -76,7 +88,7 @@ public class ExcelStoreLoader {
             // es에 저장
             List<StoreDocument> storeEs = stores.stream()
                     .map(s-> StoreDocument.builder()
-                            .storeId(s.getId().toString())
+                            .storeId(s.getId())
                             .storeName(s.getStoreName())
                             .sido(s.getSido())
                             .address(s.getAddress())
