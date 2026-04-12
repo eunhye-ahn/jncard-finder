@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { SearchAutocomplete } from "../../axios/api";
 
 type SearchBarProps = {
@@ -8,11 +8,23 @@ type SearchBarProps = {
 export const SearchBar = ({ onSearch }: SearchBarProps) => {
     const [q, setQ] = useState("");
     const [suggestions, setSuggestions] = useState<string[]>([])
+    const timerRef = useRef<ReturnType<typeof setTimeout>>(0)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setQ(e.target.value)
-        SearchAutocomplete(e.target.value)
-            .then((res) => setSuggestions(res.data))
+        const value = e.target.value
+        setQ(value)
+
+        clearTimeout(timerRef.current)
+
+        timerRef.current = setTimeout(() => {
+            if (value) {
+                SearchAutocomplete(value)
+                    .then((res) => setSuggestions(res.data))
+            }
+            else {
+                setSuggestions([]);
+            }
+        }, 300)
     }
 
     return (
@@ -33,5 +45,3 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
         </div>
     )
 }
-
-//여기는 q만 넘겨줌
