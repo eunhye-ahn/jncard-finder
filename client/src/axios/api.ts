@@ -6,5 +6,11 @@ export const searchStore = (params: SearchRequest) => {
 }
 
 export const SearchRank = () => {
-    return api.get("/search/rank")
+    return api.get<string[]>("/search/rank")
+}
+
+export const SearchAutocomplete = (q: string) => {
+    return api.get<string[]>("/search/autocomplete", {
+        params: { q }
+    })
 }

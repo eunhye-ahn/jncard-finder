@@ -58,7 +58,10 @@ public class StoreSearchController {
     //자동완성
     @GetMapping("/autocomplete")
     public ResponseEntity<?> getSearchAutocomplete(@RequestParam(required = false) String q){
-        List<String> result = searchRankService.getAutocomplete();
-        return
+        List<String> result = storeService.autoComplete(q);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(result);
     }
 }

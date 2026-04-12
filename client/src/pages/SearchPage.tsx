@@ -77,9 +77,7 @@ export const SearchPage = () => {
                 stores={data.stores}
                 hasNext={data.hasNext}
                 onLoadMore={handleLoadMore} />
-            <SearchTopRank
-                rank={rank}
-            />
+            <SearchTopRank rank={rank} />
         </div>
     )
 }
