@@ -1,6 +1,7 @@
 export interface SearchRequest {
     q: string | null,
     sido: string | null,
+    category: string | null,
     cursor: string | null,
     size: number | null,
 }

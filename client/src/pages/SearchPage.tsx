@@ -6,6 +6,7 @@ export const SearchPage = () => {
     const [query, setQuery] = useState<SearchRequest>({
         q: null,
         sido: null,
+        category: null,
         cursor: null,
         size: null
     });

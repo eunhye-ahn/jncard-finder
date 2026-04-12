@@ -103,7 +103,7 @@ public class StoreService {
                                     b.must(m->m
                                             .multiMatch(mm -> mm
                                                     .query(request.getQ())
-                                                    .fields("storeName","address","category")));
+                                                    .fields("storeName^3","address^1","category^2")));
                                 }
                                 if(StringUtils.hasText(request.getSido())){
                                     //시군필터(점수무관) filter type -> term쿼리로 작성
@@ -111,6 +111,12 @@ public class StoreService {
                                             .term(t->t
                                                     .field("sido")
                                                     .value(request.getSido())));
+                                }
+                                if(StringUtils.hasText(request.getCategory())){
+                                    b.filter(f->f
+                                            .term(t->t
+                                                    .field("category")
+                                                    .value(request.getCategory())));
                                 }
                                 //검색없으면 전체조회
                                 if(!StringUtils.hasText(request.getQ()) && !StringUtils.hasText(request.getSido()))

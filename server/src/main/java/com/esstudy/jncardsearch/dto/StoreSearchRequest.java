@@ -18,6 +18,7 @@ import org.hibernate.annotations.Parameter;
 public class StoreSearchRequest {
     private String q;
     private String sido;
+    private String category;
     private String cursor;
     private int size = 10;
 }

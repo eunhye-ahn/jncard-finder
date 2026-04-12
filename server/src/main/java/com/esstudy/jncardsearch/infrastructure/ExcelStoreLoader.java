@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -62,6 +64,8 @@ public class ExcelStoreLoader {
         try (InputStream is = getClass().getResourceAsStream(filePath);
              Workbook workbook = new XSSFWorkbook(is)) {
 
+            Map<String,String> categories = loadCategoryMap(workbook);
+
             Sheet sheet = workbook.getSheet("광주은행");
 
             // 엑셀 행 읽기
@@ -69,13 +73,17 @@ public class ExcelStoreLoader {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
+                String rawCategoy = getCellValue(row,6).replaceAll("\\s+", "");
+                String category = categories.getOrDefault(rawCategoy,"기타");
+                log.info("업종명: '{}' -> '{}'", rawCategoy, category);
+
                 //저장 순서 엑셀파싱>rdb저장>es저장 : rdb의 생성된 id를
                 // es의 storeId(정렬용/rdb연결용)에 저장하기위해
                 Store store = Store.builder()
                                 .sido(getCellValue(row, 1))
                                 .storeName(getCellValue(row, 3))
                                 .address(getCellValue(row, 4))
-                                .category(getCellValue(row, 5))
+                                .category(category)
                                 // 리뷰 작성되면 업데이트
                                 .avgRating(0.0f)
                                 .reviewCount(0)
@@ -103,14 +111,35 @@ public class ExcelStoreLoader {
         }
     }
 
+    // excel 데이터 전처리
+    //1. excel데이터 타입 string으로 통일
     private String getCellValue(Row row, int column) {
         Cell cell = row.getCell(column);
         if (cell == null) return "";
 
         return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
+            case STRING -> cell.getStringCellValue().trim(); //앞뒤공백제거
             case NUMERIC -> String.valueOf((long)cell.getNumericCellValue());
             default -> "";
         };
+    }
+
+    //3. 카테고리 매핑
+    private Map<String,String> loadCategoryMap(Workbook workbook){
+        Sheet sheet = workbook.getSheet("업종-카테고리");
+        Map<String,String> map = new HashMap<>();
+
+        for(int i = 1; i <= sheet.getLastRowNum(); i++){
+            Row row = sheet.getRow(i);
+            if (row == null) continue;
+            //중간공백제거
+            String original = getCellValue(row,0).replaceAll("\\s+", "");
+            String category = getCellValue(row,1);
+
+            if(!original.isEmpty()){
+                map.put(original,category);
+            }
+        }
+        return map;
     }
 }
