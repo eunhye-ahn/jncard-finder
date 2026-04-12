@@ -20,6 +20,11 @@ export const FilterBar = ({ category, sido, onSidoChange, onCategoryChange }: Fi
                 ))}
             </select>
             {/* 카테고리 */}
+            <button
+                style={{ fontWeight: category === null ? "bold" : "normal" }}
+                onClick={() => onCategoryChange(null)}>
+                전체
+            </button>
             {CATEGORY_LIST.map(c => (
                 <button key={c}
                     style={{ fontWeight: category === c ? "bold" : "normal" }}

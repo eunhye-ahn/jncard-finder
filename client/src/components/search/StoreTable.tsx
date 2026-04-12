@@ -1,10 +1,11 @@
-import type { SearchResponse } from "../../type/search"
+import type { SearchResponse, Store } from "../../type/search"
 
 type StoreTableProps = Pick<SearchResponse, "stores" | "hasNext"> & {
-    onLoadMore: () => void
+    onLoadMore: () => void,
+    onStoreClick: (store: Store) => void
 }
 
-export const StoreTable = ({ stores, hasNext, onLoadMore }: StoreTableProps) => {
+export const StoreTable = ({ stores, hasNext, onLoadMore, onStoreClick }: StoreTableProps) => {
 
     return (
         <div>
@@ -19,7 +20,7 @@ export const StoreTable = ({ stores, hasNext, onLoadMore }: StoreTableProps) => 
                 </thead>
                 <tbody>
                     {stores.map((store, index) =>
-                        <tr key={store.storeId}>
+                        <tr key={store.storeId} onClick={() => onStoreClick(store)}>
                             <td>{index + 1}</td>
                             <td>{store.storeName}</td>
                             <td>{store.sido}</td>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
-import type { SearchRequest, SearchResponse } from "../type/search";
+import type { SearchRequest, SearchResponse, Store } from "../type/search";
 import { SearchRank, searchStore } from "../axios/api";
 import { SearchBar } from "../components/search/SearchBar";
 import { StoreTable } from "../components/search/StoreTable";
 import { FilterBar } from "../components/search/FilterBar";
 import { SearchTopRank } from "../components/search/SearchTopRank";
+import { KakaoMap } from "../components/search/KakaoMap";
 
 //상태만 들고 있기 자식들에게 prop으로 내려주기
 
@@ -23,6 +24,7 @@ export const SearchPage = () => {
     });
 
     const [rank, setRank] = useState<string[]>([]);
+    const [selectedStore, setSelectedStore] = useState<Store | null>(null);
 
     const fetchSearch = () => {
         searchStore(query)
@@ -65,6 +67,10 @@ export const SearchPage = () => {
         setQuery(prev => ({ ...prev, sido: s }))
     }
 
+    const handleStoreClick = (store: Store) => {
+        setSelectedStore(store)
+    }
+
     return (
         <div>
             <SearchBar onSearch={handleSearch} />
@@ -76,8 +82,10 @@ export const SearchPage = () => {
             <StoreTable
                 stores={data.stores}
                 hasNext={data.hasNext}
-                onLoadMore={handleLoadMore} />
+                onLoadMore={handleLoadMore}
+                onStoreClick={handleStoreClick} />
             <SearchTopRank rank={rank} />
+            <KakaoMap selectedStore={selectedStore} />
         </div>
     )
 }

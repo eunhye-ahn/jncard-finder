@@ -36,7 +36,8 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
             {suggestions.length > 0 && (
                 <div>
                     {suggestions.map(s => (
-                        <div key={s}>
+                        <div key={s}
+                            onClick={() => onSearch(s)}>
                             {s}
                         </div>
                     ))}
