@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react"
 import type { SearchRequest, SearchResponse } from "../type/search";
 import { searchStore } from "../axios/api";
+import { SearchBar } from "../components/search/SearchBar";
+import { StoreTable } from "../components/search/StoreTable";
+import { FilterBar } from "../components/search/FilterBar";
+
+//상태만 들고 있기 자식들에게 prop으로 내려주기
 
 export const SearchPage = () => {
     const [query, setQuery] = useState<SearchRequest>({
@@ -25,10 +30,10 @@ export const SearchPage = () => {
 
     useEffect(() => {
         fetchSearch();
-    }, []);
+    }, [query]);
 
-    const handleSearch = () => {
-        fetchSearch();
+    const handleSearch = (q: SearchRequest["q"]) => {
+        setQuery(prev => ({ ...prev, q: q }))
     }
 
     //무한스크롤 - 기존꺼 유지하고 추가
@@ -42,39 +47,27 @@ export const SearchPage = () => {
             })
     }
 
+    const handleCategoryChange = (c: SearchRequest["category"]) => {
+        setQuery(prev => ({ ...prev, category: c }))
+    }
+
+    const handleSidoChange = (s: SearchRequest["sido"]) => {
+        setQuery(prev => ({ ...prev, sido: s }))
+    }
+
     return (
         <div>
+            <SearchBar onSearch={handleSearch} />
+            <FilterBar
+                category={query.category}
+                sido={query.sido}
+                onCategoryChange={handleCategoryChange}
+                onSidoChange={handleSidoChange} />
             <div>
-                <input type="text"
-                    onChange={(e) => setQuery(prev => ({ ...prev, q: e.target.value }))} />
-                <button onClick={handleSearch}>검색</button>
-            </div>
-            <div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>번호</th>
-                            <th>가맹점명</th>
-                            <th>시도</th>
-                            <th>주소</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.stores.map((store, index) =>
-                            <tr key={store.storeId}>
-                                <td>{index + 1}</td>
-                                <td>{store.storeName}</td>
-                                <td>{store.sido}</td>
-                                <td>{store.address}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-                {data.hasNext &&
-                    <button onClick={handleLoadMore}>
-                        더보기
-                    </button>
-                }
+                <StoreTable
+                    stores={data.stores}
+                    hasNext={data.hasNext}
+                    onLoadMore={handleLoadMore} />
             </div>
         </div>
     )
