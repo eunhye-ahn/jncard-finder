@@ -1,29 +1,26 @@
 package com.esstudy.jncardsearch.controller;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import com.esstudy.jncardsearch.domain.StoreDocument;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
 import com.esstudy.jncardsearch.dto.StoreSearchResponse;
+import com.esstudy.jncardsearch.service.SearchRankService;
 import com.esstudy.jncardsearch.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/search")
 public class StoreSearchController {
     private final StoreService storeService;
-    private final ElasticsearchClient elasticsearchClient;
+    private final SearchRankService searchRankService;
 
 
     @GetMapping("/stores")
@@ -37,6 +34,8 @@ public class StoreSearchController {
         System.out.println(q);
 
         StoreSearchRequest request = new StoreSearchRequest(q, sido, category, cursor, size);
+
+        searchRankService.incrementScore(q);
         StoreSearchResponse result = storeService.search(request);
 
         return ResponseEntity
@@ -45,4 +44,21 @@ public class StoreSearchController {
     }
     //집계는 동적으로 바뀔때 사용
     //시군필터와 카테고리 필터는 고정이므로 하드코딩이 맞음
+
+
+    //인기검색어 조회
+    @GetMapping("/rank")
+    public ResponseEntity<?> getSearchRank(){
+        List<String> result = searchRankService.getTopKeywords();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(result);
+    }
+
+    //자동완성
+    @GetMapping("/autocomplete")
+    public ResponseEntity<?> getSearchAutocomplete(@RequestParam(required = false) String q){
+        List<String> result = searchRankService.getAutocomplete();
+        return
+    }
 }

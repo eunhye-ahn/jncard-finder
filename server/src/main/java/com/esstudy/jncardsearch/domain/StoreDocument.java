@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.elasticsearch.annotations.CompletionField;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 import org.springframework.data.elasticsearch.core.suggest.Completion;
 
 /**
@@ -46,7 +43,7 @@ public class StoreDocument {
     @Field(type = FieldType.Long)
     private Long storeId;
 
-    @Field(type= FieldType.Text, analyzer = "nori_analyzer")
+    @Field(type= FieldType.Search_As_You_Type, analyzer = "nori_analyzer")
     private String storeName;
 
     @Field(type=FieldType.Keyword)
@@ -55,11 +52,9 @@ public class StoreDocument {
     @Field(type=FieldType.Text, analyzer = "nori_analyzer")
     private String address;
 
-    @Field(type=FieldType.Text, analyzer = "nori_analyzer")
+    @MultiField(mainField = @Field(type = FieldType.Keyword),
+    otherFields = {@InnerField(suffix = "text", type = FieldType.Text, analyzer = "nori_analyzer")})
     private String category;
-
-    @CompletionField //자동완성
-    private Completion storeNameSuggest;
 
     //리뷰작성되면 avgRating, reviewCount 업데이트
     @Field(type=FieldType.Float)

@@ -75,7 +75,6 @@ public class ExcelStoreLoader {
 
                 String rawCategoy = getCellValue(row,6).replaceAll("\\s+", "");
                 String category = categories.getOrDefault(rawCategoy,"기타");
-                log.info("업종명: '{}' -> '{}'", rawCategoy, category);
 
                 //저장 순서 엑셀파싱>rdb저장>es저장 : rdb의 생성된 id를
                 // es의 storeId(정렬용/rdb연결용)에 저장하기위해

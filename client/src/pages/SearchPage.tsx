@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
 import type { SearchRequest, SearchResponse } from "../type/search";
-import { searchStore } from "../axios/api";
+import { SearchRank, searchStore } from "../axios/api";
 import { SearchBar } from "../components/search/SearchBar";
 import { StoreTable } from "../components/search/StoreTable";
 import { FilterBar } from "../components/search/FilterBar";
+import { SearchTopRank } from "../components/search/SearchTopRank";
 
 //상태만 들고 있기 자식들에게 prop으로 내려주기
 
@@ -21,19 +22,28 @@ export const SearchPage = () => {
         hasNext: false
     });
 
+    const [rank, setRank] = useState<string[]>([]);
+
     const fetchSearch = () => {
         searchStore(query)
             .then((res) => {
                 setData(res.data)
+                fetchSearchRank();
             })
     }
+    const fetchSearchRank = () => {
+        SearchRank()
+            .then((res) => setRank(res.data))
+    };
 
     useEffect(() => {
         fetchSearch();
     }, [query]);
 
+
+
     const handleSearch = (q: SearchRequest["q"]) => {
-        setQuery(prev => ({ ...prev, q: q }))
+        setQuery(prev => ({ ...prev, q: q }));
     }
 
     //무한스크롤 - 기존꺼 유지하고 추가
@@ -63,12 +73,13 @@ export const SearchPage = () => {
                 sido={query.sido}
                 onCategoryChange={handleCategoryChange}
                 onSidoChange={handleSidoChange} />
-            <div>
-                <StoreTable
-                    stores={data.stores}
-                    hasNext={data.hasNext}
-                    onLoadMore={handleLoadMore} />
-            </div>
+            <StoreTable
+                stores={data.stores}
+                hasNext={data.hasNext}
+                onLoadMore={handleLoadMore} />
+            <SearchTopRank
+                rank={rank}
+            />
         </div>
     )
 }

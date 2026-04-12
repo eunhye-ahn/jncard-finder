@@ -1,6 +1,7 @@
 package com.esstudy.jncardsearch.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import com.esstudy.jncardsearch.domain.StoreDocument;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
 import com.esstudy.jncardsearch.dto.StoreSearchResponse;
@@ -17,8 +18,10 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.lang.annotation.Native;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * [검색 실행 흐름]
@@ -89,6 +92,32 @@ public class StoreService {
                 .build();
 
         return result;
+    }
+
+    //자동완성
+    public List<String> autoComplete(String q) {
+        NativeQuery query =  buildAutocompleteQuery(q);
+        SearchHits<StoreDocument> hits = elasticsearchOperations.search(query, StoreDocument.class);
+
+        return hits.getSearchHits()
+                .stream()
+                .map(hit -> hit.getContent().getStoreName())
+                .distinct()
+                .toList();
+    }
+
+    //자동완성 쿼리빌드
+    private NativeQuery buildAutocompleteQuery(String q) {
+        return NativeQuery.builder()
+                .withQuery(qb -> qb
+                        .multiMatch(mm -> mm
+                                .query(q)
+                                .type(TextQueryType.BoolPrefix)
+                                .fields("storeName", "storeName._2gram", "storeName._3gram")
+                        )
+                )
+                .withPageable(PageRequest.of(0,3))
+                .build();
     }
 
     //ES 쿼리 빌드
