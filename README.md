@@ -3,12 +3,13 @@
 
 ## 설계전략
 
-### RDB - ES 관계 전략
+### RDB - ES 관계
 - RDB의 `id(PK)` 값을 ES의 `storeId(keyword)`에 동일하게 저장
 - 검색은 ES에서, 상세 조회/연산은 RDB에서 처리
 - ES 검색 결과의 `storeId`로 RDB 조회
 
-### id 설계 전략
+
+### id 설계 
 - ES `_id`는 메타필드로 정렬 불가 → 커서 페이징 보조 정렬키로 사용 불가
 - `storeId(keyword)` 를 별도 필드로 저장 → 정렬 + RDB 연결 두 역할 담당
 
@@ -18,9 +19,24 @@
 | ES | `storeId` | keyword | RDB 연결 + 커서 정렬키 |
 | RDB | `id` | PK | storeId와 동일한 값 |
 
-### 커서 페이징 전략
+
+### 커서 페이징
 - offset 페이징은 데이터가 많을수록 성능 저하 → 커서 페이징 채택
 - 기본 정렬키 : `_score` (검색 연관도)
 - 보조 정렬키 : `storeId` (동점일 때 순서 보장 + RDB 연결)
 - 다음 페이지 있을 때만 nextCursor 생성 (없으면 null)
   - lastHit → encodeCursor() → url로 전달
+
+ 
+### 검색
+- "storeName^3","address^1","category^2" : 필드 가중치 정렬
+- "sido","category","bank" : 필터
+- filter : ["nori_part_of_speech"] => 조사 삭제
+
+
+
+### 자동완성
+> search_as_you_type (ES 전용 타입)
+- 선택 이유 :  Edge NGram과 Redis로 구현하는 대안도 있었으나,
+search_as_you_type + mixed 충돌 => search_as_you_type + discard로 변경
+
