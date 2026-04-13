@@ -1,6 +1,31 @@
 # jncard-finder 
 전남청년문화복지카드 가맹점 검색 서비스
 
+---
+
+## 흐름도
+
+- **es 매핑과 색인**
+
+  ![](images/es매핑.drawio.png)
+
+---
+
+
+- **es 통합검색 + Redis 인기검색**
+
+  ![](images/통합검색+인기검색.drawio.png)
+
+---
+
+
+- **Redis 자동완성**
+
+  ![](images/자동완성.drawio.png)
+
+---
+
+
 ## 설계전략
 
 ### RDB - ES 관계
