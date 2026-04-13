@@ -10,3 +10,7 @@ export const CATEGORY_LIST = [
     "학원/교육", "스포츠/레저", "숙박", "문화/예술",
     "영화/음악", "악기", "서적/문구", "기타"
 ]
+
+export const BANK_LIST = [
+    "광주은행", "농협은행"
+]

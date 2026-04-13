@@ -1,12 +1,13 @@
-import { CATEGORY_LIST, SIDO_LIST } from "../../constants/filters";
+import { BANK_LIST, CATEGORY_LIST, SIDO_LIST } from "../../constants/filters";
 import type { SearchRequest } from "../../type/search";
 
-type FilterBarProps = Pick<SearchRequest, "category" | "sido"> & {
+type FilterBarProps = Pick<SearchRequest, "category" | "sido" | "bank"> & {
     onSidoChange: (sido: SearchRequest["sido"]) => void,
     onCategoryChange: (category: SearchRequest["category"]) => void
+    onBankChange: (bank: SearchRequest["bank"]) => void
 }
 
-export const FilterBar = ({ category, sido, onSidoChange, onCategoryChange }: FilterBarProps) => {
+export const FilterBar = ({ category, sido, bank, onSidoChange, onCategoryChange, onBankChange }: FilterBarProps) => {
     return (
         <div>
             {/* 시도 */}
@@ -17,6 +18,13 @@ export const FilterBar = ({ category, sido, onSidoChange, onCategoryChange }: Fi
                 <option value="">전체</option>
                 {SIDO_LIST.map(s => (
                     <option key={s} value={s}>{s}</option>
+                ))}
+            </select>
+            <select
+                value={bank ?? ""}
+                onChange={(e) => onBankChange(e.target.value || null)}>
+                {BANK_LIST.map(b => (
+                    <option key={b} value={b}>{b}</option>
                 ))}
             </select>
             {/* 카테고리 */}

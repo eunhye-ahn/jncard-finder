@@ -25,5 +25,6 @@ public class StoreSearchResponse {
         private String storeName;
         private String sido;
         private String address;
+        private String bank;
     }
 }

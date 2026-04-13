@@ -14,6 +14,7 @@ export const SearchPage = () => {
         q: null,
         sido: null,
         category: null,
+        bank: null,
         cursor: null,
         size: null
     });
@@ -71,20 +72,28 @@ export const SearchPage = () => {
         setSelectedStore(store)
     }
 
+    const handleBankChange = (b: SearchRequest["bank"]) => {
+        setQuery(prev => ({ ...prev, bank: b }))
+    }
+
     return (
         <div>
             <SearchBar onSearch={handleSearch} />
             <FilterBar
                 category={query.category}
                 sido={query.sido}
+                bank={query.bank}
                 onCategoryChange={handleCategoryChange}
-                onSidoChange={handleSidoChange} />
+                onSidoChange={handleSidoChange}
+                onBankChange={handleBankChange} />
             <StoreTable
                 stores={data.stores}
                 hasNext={data.hasNext}
                 onLoadMore={handleLoadMore}
                 onStoreClick={handleStoreClick} />
-            <SearchTopRank rank={rank} />
+            <SearchTopRank
+                rank={rank}
+                onSearch={handleSearch} />
             <KakaoMap selectedStore={selectedStore} />
         </div>
     )

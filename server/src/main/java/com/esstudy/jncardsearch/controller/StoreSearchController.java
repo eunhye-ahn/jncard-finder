@@ -28,12 +28,13 @@ public class StoreSearchController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String sido,
             @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "광주은행") String bank,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10") int size) {
         //서비스에서 검색 메서드가져오기
         System.out.println(q);
 
-        StoreSearchRequest request = new StoreSearchRequest(q, sido, category, cursor, size);
+        StoreSearchRequest request = new StoreSearchRequest(q, sido, category, bank, cursor, size);
 
         searchRankService.incrementScore(q);
         StoreSearchResponse result = storeService.search(request);

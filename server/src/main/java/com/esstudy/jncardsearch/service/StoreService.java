@@ -147,6 +147,12 @@ public class StoreService {
                                                     .field("category")
                                                     .value(request.getCategory())));
                                 }
+                                if(StringUtils.hasText(request.getBank())){
+                                    b.filter(f->f
+                                    .term(t->t
+                                            .field("bank")
+                                            .value(request.getBank())));
+                                }
                                 //검색없으면 전체조회
                                 if(!StringUtils.hasText(request.getQ()) && !StringUtils.hasText(request.getSido()))
                                 {

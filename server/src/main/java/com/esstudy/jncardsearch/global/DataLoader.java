@@ -34,6 +34,6 @@ public class DataLoader implements ApplicationRunner {
             log.info("Almost ES data in");
             return;
         }
-        excelStoreLoader.loadStores("/data/stores.xlsx");
+        excelStoreLoader.loadAll("/data/stores.xlsx");
     }
 }

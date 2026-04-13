@@ -56,6 +56,9 @@ public class StoreDocument {
     otherFields = {@InnerField(suffix = "text", type = FieldType.Text, analyzer = "nori_analyzer")})
     private String category;
 
+    @Field(type = FieldType.Keyword)
+    private String bank;
+
     //리뷰작성되면 avgRating, reviewCount 업데이트
     @Field(type=FieldType.Float)
     private Float avgRating = 0.0f; //평균평점

@@ -19,6 +19,7 @@ public class StoreSearchRequest {
     private String q;
     private String sido;
     private String category;
+    private String bank;
     private String cursor;
     private int size = 10;
 }

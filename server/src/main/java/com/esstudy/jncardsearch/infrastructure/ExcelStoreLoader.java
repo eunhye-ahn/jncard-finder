@@ -55,8 +55,12 @@ public class ExcelStoreLoader {
     private final StoreSearchRepository storeSearchRepository;
     private final StoreRepository storeRepository;
 
-    public void loadStores(String filePath) throws IOException {
+    public void loadAll(String filePath) throws IOException {
+        loadStores(filePath,"광주은행","광주은행");
+        loadStores(filePath,"농협은행","농협은행");
+    }
 
+    public void loadStores(String filePath, String sheetName, String bank) throws IOException {
         // 순서보장, 중복저장허용
         List<Store> stores = new ArrayList<>();
 
@@ -66,7 +70,7 @@ public class ExcelStoreLoader {
 
             Map<String,String> categories = loadCategoryMap(workbook);
 
-            Sheet sheet = workbook.getSheet("광주은행");
+            Sheet sheet = workbook.getSheet(sheetName);
 
             // 엑셀 행 읽기
             for (int i = 3; i <= sheet.getLastRowNum(); i++) {
@@ -83,6 +87,7 @@ public class ExcelStoreLoader {
                                 .storeName(getCellValue(row, 3))
                                 .address(getCellValue(row, 4))
                                 .category(category)
+                                .bank(bank)
                                 // 리뷰 작성되면 업데이트
                                 .avgRating(0.0f)
                                 .reviewCount(0)
@@ -100,6 +105,7 @@ public class ExcelStoreLoader {
                             .sido(s.getSido())
                             .address(s.getAddress())
                             .category(s.getCategory())
+                            .bank(s.getBank())
                             .avgRating(s.getAvgRating())
                             .reviewCount(s.getReviewCount())
                             .build()
@@ -125,7 +131,7 @@ public class ExcelStoreLoader {
 
     //3. 카테고리 매핑
     private Map<String,String> loadCategoryMap(Workbook workbook){
-        Sheet sheet = workbook.getSheet("업종-카테고리");
+        Sheet sheet = workbook.getSheet("업종-매핑");
         Map<String,String> map = new HashMap<>();
 
         for(int i = 1; i <= sheet.getLastRowNum(); i++){

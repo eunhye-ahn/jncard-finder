@@ -10,7 +10,7 @@ type KakaoMapProps = {
 export const KakaoMap = ({ selectedStore }: KakaoMapProps) => {
     //kakao sdk 로드 (appkey로 인증, services 라이브러리 = Geocoder 사용하기 위함)
     const [loading, error] = useKakaoLoader({
-        appkey: "9e174327e283f4f12d6e459138fee8f5",
+        appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
         libraries: ["services"]
     })
 

@@ -26,6 +26,8 @@ public class Store {
 
     private String category;
 
+    private String bank;
+
     @Column(name="avg_rating")
     private Float avgRating = 0.0f; //평균평점
 
