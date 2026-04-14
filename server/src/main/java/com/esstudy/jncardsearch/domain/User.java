@@ -1,6 +1,8 @@
 package com.esstudy.jncardsearch.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +19,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(name="users")
 public class User extends BaseTime{
     @Id
@@ -34,5 +38,6 @@ public class User extends BaseTime{
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Role role = Role.ROLE_USER;
 }
