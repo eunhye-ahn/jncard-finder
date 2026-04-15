@@ -7,6 +7,7 @@ import { FilterBar } from "../components/search/FilterBar";
 import { SearchTopRank } from "../components/search/SearchTopRank";
 import { KakaoMap } from "../components/search/KakaoMap";
 import { useNavigate } from "react-router-dom";
+import { StoreDetail } from "../components/search/StoreDetail";
 
 //상태만 들고 있기 자식들에게 prop으로 내려주기
 
@@ -71,7 +72,9 @@ export const SearchPage = () => {
     }
 
     const handleStoreClick = (store: Store) => {
-        setSelectedStore(store)
+        if (selectedStore?.storeId === store.storeId)
+            setSelectedStore(null)
+        else setSelectedStore(store)
     }
 
     const handleBankChange = (b: SearchRequest["bank"]) => {
@@ -101,6 +104,9 @@ export const SearchPage = () => {
                 hasNext={data.hasNext}
                 onLoadMore={handleLoadMore}
                 onStoreClick={handleStoreClick} />
+            {selectedStore &&
+                <StoreDetail selectedStoreId={selectedStore.storeId} />
+            }
             <SearchTopRank
                 rank={rank}
                 onSearch={handleSearch} />

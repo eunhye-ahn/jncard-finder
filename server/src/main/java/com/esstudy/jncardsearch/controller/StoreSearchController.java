@@ -1,5 +1,6 @@
 package com.esstudy.jncardsearch.controller;
 
+import com.esstudy.jncardsearch.dto.StoreDetailResponse;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
 import com.esstudy.jncardsearch.dto.StoreSearchResponse;
 import com.esstudy.jncardsearch.service.SearchRankService;
@@ -8,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -60,6 +58,16 @@ public class StoreSearchController {
     @GetMapping("/autocomplete")
     public ResponseEntity<?> getSearchAutocomplete(@RequestParam(required = false) String q){
         List<String> result = storeService.autoComplete(q);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(result);
+    }
+
+    //상세조회
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<StoreDetailResponse> getSearchStore(@PathVariable Long storeId){
+        StoreDetailResponse result = storeService.getStoreDetail(storeId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

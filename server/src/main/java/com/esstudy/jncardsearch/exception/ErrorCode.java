@@ -8,7 +8,7 @@ public enum ErrorCode {
     //es검색
     //커서조작시
     INVALID_CURSOR(HttpStatus.BAD_REQUEST, "유효하지않는 커서입니다"),
-
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가맹점이 존재하지 않습니다"),
     //페이징 이건 서비스에서 처리
 
     //jwt

@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/search/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 //** 위에서 내려주는 에러메시지 출력하는거 별로?

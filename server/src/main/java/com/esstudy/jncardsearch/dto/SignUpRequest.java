@@ -17,7 +17,8 @@ public class SignUpRequest {
     private String email;
 
     @NotBlank(message = "비밀번호를 입력하세요")
-    @Pattern(regexp="^(?=.*[A-Za-z])(?=.*\\\\d)[A-Za-z\\\\d]{8,}$")
+    @Pattern(regexp="^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$",
+    message="비밀번호 8자 이상, 영문+숫자 조합이어야 합니다")
     private String password;
 
     private String homeAddress;

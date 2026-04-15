@@ -65,4 +65,7 @@ public class StoreDocument {
 
     @Field(type = FieldType.Integer)
     private Integer reviewCount = 0; //리뷰수
+
+    @Field(type = FieldType.Integer)
+    private Integer bookmarkCount = 0; //찜 수
 }

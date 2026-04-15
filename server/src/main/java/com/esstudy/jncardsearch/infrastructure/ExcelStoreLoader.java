@@ -91,6 +91,7 @@ public class ExcelStoreLoader {
                                 // 리뷰 작성되면 업데이트
                                 .avgRating(0.0f)
                                 .reviewCount(0)
+                                .bookmarkCount(0)
                         .build();
                 stores.add(store);
             }
@@ -108,6 +109,7 @@ public class ExcelStoreLoader {
                             .bank(s.getBank())
                             .avgRating(s.getAvgRating())
                             .reviewCount(s.getReviewCount())
+                            .bookmarkCount(s.getBookmarkCount())
                             .build()
                     )
                     .toList();

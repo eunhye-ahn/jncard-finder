@@ -19,3 +19,15 @@ export interface Store {
     sido: string,
     address: string
 }
+
+export interface StoreDetailResponse {
+    storeId: number,
+    storeName: string,
+    sido: string,
+    address: string,
+    category: string,
+    bank: string,
+    avgRating: number,
+    reviewCount: number,
+    bookmarkCount: number
+}

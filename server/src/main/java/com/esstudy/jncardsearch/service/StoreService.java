@@ -3,6 +3,7 @@ package com.esstudy.jncardsearch.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import com.esstudy.jncardsearch.domain.StoreDocument;
+import com.esstudy.jncardsearch.dto.StoreDetailResponse;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
 import com.esstudy.jncardsearch.dto.StoreSearchResponse;
 import com.esstudy.jncardsearch.exception.CustomException;
@@ -203,5 +204,38 @@ public class StoreService {
     private String encodeCursor(SearchHit<StoreDocument> lastHit) {
         String raw = lastHit.getScore()+","+lastHit.getContent().getStoreId();
         return Base64.getEncoder().encodeToString(raw.getBytes());
+    }
+
+    public StoreDetailResponse getStoreDetail(Long storeId) {
+        //es조회
+        NativeQuery query = NativeQuery.builder()
+                .withQuery(q->q
+                        .term(t->t
+                                .field("storeId")
+                                .value(storeId)
+                        )
+                )
+                .build();
+
+        SearchHits<StoreDocument> hits = elasticsearchOperations.search(query, StoreDocument.class);
+
+        if(hits.isEmpty()){
+            throw new CustomException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        StoreDocument doc = hits.getSearchHits().get(0).getContent();
+
+        //dto로 변환
+        return StoreDetailResponse.builder()
+                .storeId(doc.getStoreId())
+                .storeName(doc.getStoreName())
+                .sido(doc.getSido())
+                .address(doc.getAddress())
+                .category(doc.getCategory())
+                .bank(doc.getBank())
+                .avgRating(doc.getAvgRating())
+                .reviewCount(doc.getReviewCount())
+                .bookmarkCount(doc.getBookmarkCount())
+                .build();
     }
 }

@@ -43,7 +43,7 @@ export const SignUpPage = () => {
             setPasswordError("8자이상 입력하세요")
         }
         else if (!/(?=.*[A-Za-z])(?=.*\d)/.test(value)) {
-            setPasswordError("영문+숫자 조합이어야합니다")
+            setPasswordError("영문+숫자 조합이어야 합니다")
         } else {
             setPasswordError("") //통과
         }

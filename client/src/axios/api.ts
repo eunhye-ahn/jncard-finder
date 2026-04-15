@@ -1,5 +1,5 @@
 import type { LoginRequest, TokenResponse } from "../type/auth"
-import type { SearchRequest, SearchResponse } from "../type/search"
+import type { SearchRequest, SearchResponse, StoreDetailResponse } from "../type/search"
 import type { SignUpRequest } from "../type/user"
 import { api } from "./axiosInscatce"
 
@@ -27,4 +27,8 @@ export const SignUp = (request: SignUpRequest) => {
 
 export const Logout = () => {
     return api.post("/auth/logout")
+}
+
+export const getStoreDetail = (storeId: number) => {
+    return api.get<StoreDetailResponse>(`/search/store/${storeId}`)
 }

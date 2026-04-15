@@ -33,4 +33,7 @@ public class Store {
 
     @Column(name="review_count")
     private Integer reviewCount = 0; //리뷰수
+
+    @Column(name="bookmark_count")
+    private Integer bookmarkCount = 0;
 }

@@ -43,6 +43,7 @@ export const LoginPage = () => {
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} />
                 </div>
                 <button>Login</button>
+                <button onClick={() => navigate("/signup")}>SignUp</button>
             </form>
         </div>
     )
