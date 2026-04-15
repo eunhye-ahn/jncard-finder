@@ -8,8 +8,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(new ErrorResponse(
+                        errorCode.getStatus().value(),
+                        errorCode.name(),
+                        errorCode.getMessage()
+                ));
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handle(Exception e) {
+    public ResponseEntity<?> handleException(Exception e) {
         e.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

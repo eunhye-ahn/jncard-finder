@@ -36,6 +36,9 @@ public class User extends BaseTime{
     @Column
     private String password;
 
+    @Column(name="home_address")
+    private String homeAddress;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default

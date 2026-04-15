@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN home_address VARCHAR(255);

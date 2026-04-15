@@ -49,6 +49,13 @@ public class RedisService {
     }
 
     //at br등록
+    public void addBlackList(String accessToken, Long remainingExpiration) {
+        redisTemplate.opsForValue()
+                .set("BL:"+accessToken, "logout", remainingExpiration, TimeUnit.MILLISECONDS);
+    }
 
     //br조회
+    public boolean isBlackList(String accessToken) {
+        return redisTemplate.hasKey("BL:"+accessToken);
+    }
 }

@@ -92,4 +92,9 @@ public class JwtProvider {
     public Long getRefreshExpiration() {
         return refreshExpiration;
     }
+
+    public Long getRemainingExpiration(String accessToken) {
+        Claims claims = pasrseClaim(accessToken);
+        return claims.getExpiration().getTime()-System.currentTimeMillis();
+    }
 }

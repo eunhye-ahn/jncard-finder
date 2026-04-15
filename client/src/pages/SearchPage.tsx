@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
 import type { SearchRequest, SearchResponse, Store } from "../type/search";
-import { SearchRank, searchStore } from "../axios/api";
+import { Logout, SearchRank, searchStore } from "../axios/api";
 import { SearchBar } from "../components/search/SearchBar";
 import { StoreTable } from "../components/search/StoreTable";
 import { FilterBar } from "../components/search/FilterBar";
 import { SearchTopRank } from "../components/search/SearchTopRank";
 import { KakaoMap } from "../components/search/KakaoMap";
+import { useNavigate } from "react-router-dom";
 
 //상태만 들고 있기 자식들에게 prop으로 내려주기
 
@@ -26,6 +27,7 @@ export const SearchPage = () => {
 
     const [rank, setRank] = useState<string[]>([]);
     const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+    const navigate = useNavigate();
 
     const fetchSearch = () => {
         searchStore(query)
@@ -76,8 +78,16 @@ export const SearchPage = () => {
         setQuery(prev => ({ ...prev, bank: b }))
     }
 
+    const handleLogout = () => {
+        Logout()
+            .then(() => {
+                navigate("/login")
+            })
+    }
+
     return (
         <div>
+            <button onClick={handleLogout}>로그아웃</button>
             <SearchBar onSearch={handleSearch} />
             <FilterBar
                 category={query.category}

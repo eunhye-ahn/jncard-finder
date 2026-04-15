@@ -1,10 +1,14 @@
 package com.esstudy.jncardsearch.jwt;
 
+import com.esstudy.jncardsearch.exception.CustomException;
+import com.esstudy.jncardsearch.exception.ErrorCode;
+import com.esstudy.jncardsearch.service.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
 
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
@@ -47,6 +52,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
             if(token != null) {
+                if(redisService.isBlackList(token)){
+                    throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+                }
                 jwtProvider.validateToken(token);
                 Long userId = jwtProvider.getUserIdFromToken(token);
                 String role = jwtProvider.getRoleFromToken(token);
@@ -62,6 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
         catch (Exception e) {
+            //mvc밖에서 예외처리 형식 통일화 보충***
             SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");

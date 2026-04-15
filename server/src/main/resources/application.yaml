@@ -28,7 +28,7 @@ spring:
       port: 6379
 
 server:
-  port:
+  port: 8080
   servlet:
     encoding:
       charset: UTF-8

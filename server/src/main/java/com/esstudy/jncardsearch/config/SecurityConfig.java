@@ -16,6 +16,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * 매요청마다 아래 흐름 반복 - stateless 방식이라서
+ * 필터 흐름
+ * 요청 >
+ * 시큐리티필터체인 >
+ * cors필터 > (자동) 빈 컨텍스트 로드 <-초기화
+ * > jwt 필터 - 토큰 추출 → 검증 → 유저 로드 -> authentication 객체 생성 -> 시큐리티 홀더 저장 (인증)
+ * > exceptiontranslationfilter 인증/인가 예외처리
+ * > filtersecurityinterceptor 권한 체크
+ * > controller
+ */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -27,7 +39,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 //** 위에서 내려주는 에러메시지 출력하는거 별로?
@@ -41,6 +53,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 

@@ -37,6 +37,16 @@ public class AuthService {
         //RT redis 저장
         redisService.saveRefreshToken(user.getId(),refreshToken, jwtProvider.getRefreshExpiration());
 
-        return new TokenResponse(accessToken, refreshToken);
+        return new TokenResponse(accessToken);
+    }
+
+    //로그아웃
+    public void logout(String accessToken) {
+        //at bl 등록
+        redisService.addBlackList(accessToken, jwtProvider.getRemainingExpiration(accessToken));
+
+        //rt 삭제
+        Long userId = jwtProvider.getUserIdFromToken(accessToken);
+        redisService.deleteRefreshToken(userId);
     }
 }
