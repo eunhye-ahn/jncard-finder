@@ -1,7 +1,7 @@
 package com.esstudy.jncardsearch.service;
 
 import com.esstudy.jncardsearch.domain.User;
-import com.esstudy.jncardsearch.dto.SignupRequest;
+import com.esstudy.jncardsearch.dto.SignUpRequest;
 import com.esstudy.jncardsearch.dto.TokenResponse;
 import com.esstudy.jncardsearch.exception.CustomException;
 import com.esstudy.jncardsearch.exception.ErrorCode;
@@ -20,7 +20,7 @@ public class UserService {
     private final RedisService redisService;
 
     //회원가입
-    public TokenResponse save(SignupRequest request) {
+    public TokenResponse save(SignUpRequest request) {
         //email 유효성 검사
         if(userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);

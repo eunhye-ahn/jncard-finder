@@ -32,4 +32,18 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult()
+                .getFieldErrors()
+                .getFirst()
+                .getDefaultMessage();
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        400,
+                        ErrorCode.INVALID_INPUT.name(),
+                        message
+                ));
+    }
 }

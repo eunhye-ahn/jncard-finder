@@ -4,6 +4,7 @@ import com.esstudy.jncardsearch.dto.LoginRequest;
 import com.esstudy.jncardsearch.dto.TokenResponse;
 import com.esstudy.jncardsearch.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         TokenResponse token = authService.login(request);
 
         return ResponseEntity

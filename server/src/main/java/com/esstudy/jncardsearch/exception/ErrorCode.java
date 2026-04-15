@@ -19,6 +19,9 @@ public enum ErrorCode {
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "이메일/비밀번호가 틀렸습니다"),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "중복된 이메일 입니다"),
 
+    //valid
+    INVALID_INPUT(HttpStatus.BAD_REQUEST, "잘못된 입력입니다"),
+
     //공통
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 오류가 발생했습니다.");
 
