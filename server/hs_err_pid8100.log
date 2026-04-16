@@ -1,0 +1,37 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffe883ed344, pid=8100, tid=30336
+#
+# JRE version: OpenJDK Runtime Environment JBR-21.0.6+9-895.109-jcef (21.0.6+9) (build 21.0.6+9-b895.109)
+# Java VM: OpenJDK 64-Bit Server VM JBR-21.0.6+9-895.109-jcef (21.0.6+9-b895.109, mixed mode, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# Problematic frame:
+# V  [jvm.dll+0x3ed344]
+#
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   https://youtrack.jetbrains.com/issues/JBR
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Djava.rmi.server.hostname=127.0.0.1 -Duser.timezone=UTC -Xmx2048m -Xms128m -Djdbc.classpath=C:\Users\EH\AppData\Local\Temp\RemoteDriver2.classpath.txt --add-exports=java.desktop/sun.awt=ALL-UNNAMED --add-exports=java.desktop/java.awt.peer=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 com.intellij.database.remote.RemoteJdbcServer org.postgresql.Driver
+
+Host: AMD Ryzen 5 7520U with Radeon Graphics         , 8 cores, 15G,  Windows 11 , 64 bit Build 26100 (10.0.26100.8115)
+Time: Thu Apr 16 15:35:01 2026  Windows 11 , 64 bit Build 26100 (10.0.26100.8115) elapsed time: 8.361278 seconds (0d 0h 0m 8s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000002590e1fdb80):  JavaThread "RMI TCP Connection(4)-127.0.0.1" daemon [_thread_in_vm, id=30336, stack(0x0000005d16900000,0x0000005d16a00000) (1024K)]
+
+Stack: [0x0000005d16900000,0x0000005d16a00000],  sp=0x0000005d169f4c80,  free space=979k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x3ed344]
+V  [jvm.dll+0x6e5bd2]
+V  [jvm.dll+0x3ed0de]
+V  [jvm.dll+0x83802f]
+V  [jvm.dll+0x839c70]
+V  [jvm.dll+0x83b8a0]
+V  [jvm.dll+0x83b97e]
+V  [jvm.dll+0x4801bd]

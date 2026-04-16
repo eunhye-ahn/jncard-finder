@@ -3,15 +3,19 @@ package com.esstudy.jncardsearch.controller;
 import com.esstudy.jncardsearch.dto.StoreDetailResponse;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
 import com.esstudy.jncardsearch.dto.StoreSearchResponse;
+import com.esstudy.jncardsearch.service.BookmarkService;
 import com.esstudy.jncardsearch.service.SearchRankService;
 import com.esstudy.jncardsearch.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+//가맹점 조회
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +23,7 @@ import java.util.List;
 public class StoreSearchController {
     private final StoreService storeService;
     private final SearchRankService searchRankService;
+    private final BookmarkService bookmarkService;
 
 
     @GetMapping("/stores")
@@ -66,11 +71,24 @@ public class StoreSearchController {
 
     //상세조회
     @GetMapping("/store/{storeId}")
-    public ResponseEntity<StoreDetailResponse> getSearchStore(@PathVariable Long storeId){
+    public ResponseEntity<StoreDetailResponse> getSearchStore(@AuthenticationPrincipal Long userId, @PathVariable Long storeId){
         StoreDetailResponse result = storeService.getStoreDetail(storeId);
+        boolean isBookmarked = userId != null &&
+                bookmarkService.isBookmarked(userId, storeId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(result);
+                .body(StoreDetailResponse.builder()
+                        .storeId(result.getStoreId())
+                        .storeName(result.getStoreName())
+                        .sido(result.getSido())
+                        .address(result.getAddress())
+                        .category(result.getCategory())
+                        .bank(result.getBank())
+                        .avgRating(result.getAvgRating())
+                        .reviewCount(result.getReviewCount())
+                        .bookmarkCount(result.getBookmarkCount())
+                        .isBookmarked(isBookmarked)
+                        .build());
     }
 }

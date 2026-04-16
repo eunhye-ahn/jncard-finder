@@ -1,5 +1,7 @@
 package com.esstudy.jncardsearch.exception;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -7,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
@@ -23,13 +26,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleException(Exception e) {
         e.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                        500,
-                        ErrorCode.INTERNAL_SERVER_ERROR.name(),
-                        ErrorCode.INTERNAL_SERVER_ERROR.getMessage()
-                ));
+        log.error("server error: {}",e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -45,5 +43,12 @@ public class GlobalExceptionHandler {
                         ErrorCode.INVALID_INPUT.name(),
                         message
                 ));
+    }
+
+    //uique 제약조건
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.warn("DB unique error:{}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 }

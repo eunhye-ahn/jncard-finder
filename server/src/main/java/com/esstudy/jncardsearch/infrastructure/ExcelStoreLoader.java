@@ -101,6 +101,7 @@ public class ExcelStoreLoader {
             // es에 저장
             List<StoreDocument> storeEs = stores.stream()
                     .map(s-> StoreDocument.builder()
+                            .id(String.valueOf(s.getId())) //redinex시, 아이디 덮어쓰기
                             .storeId(s.getId())
                             .storeName(s.getStoreName())
                             .sido(s.getSido())

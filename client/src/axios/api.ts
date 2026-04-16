@@ -1,4 +1,5 @@
 import type { LoginRequest, TokenResponse } from "../type/auth"
+import type { BookmarkStatus } from "../type/bookmark"
 import type { SearchRequest, SearchResponse, StoreDetailResponse } from "../type/search"
 import type { SignUpRequest } from "../type/user"
 import { api } from "./axiosInscatce"
@@ -31,4 +32,8 @@ export const Logout = () => {
 
 export const getStoreDetail = (storeId: number) => {
     return api.get<StoreDetailResponse>(`/search/store/${storeId}`)
+}
+
+export const toggleBookmark = (storeId: number) => {
+    return api.post<BookmarkStatus>(`/bookmarks/${storeId}`)
 }

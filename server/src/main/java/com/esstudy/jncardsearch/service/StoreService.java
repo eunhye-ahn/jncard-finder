@@ -1,7 +1,11 @@
 package com.esstudy.jncardsearch.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
+import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest;
+import co.elastic.clients.elasticsearch.core.UpdateRequest;
 import com.esstudy.jncardsearch.domain.StoreDocument;
 import com.esstudy.jncardsearch.dto.StoreDetailResponse;
 import com.esstudy.jncardsearch.dto.StoreSearchRequest;
@@ -10,6 +14,7 @@ import com.esstudy.jncardsearch.exception.CustomException;
 import com.esstudy.jncardsearch.exception.ErrorCode;
 import com.esstudy.jncardsearch.repository.StoreSearchRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
@@ -19,10 +24,15 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.lang.annotation.Native;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.json.JsonData;
 
 /**
  * [검색 실행 흐름]
@@ -48,8 +58,10 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StoreService {
     private final ElasticsearchOperations elasticsearchOperations;
+    private final ElasticsearchClient elasticsearchClient;
 
     public StoreSearchResponse search(StoreSearchRequest request) {
 
@@ -237,5 +249,57 @@ public class StoreService {
                 .reviewCount(doc.getReviewCount())
                 .bookmarkCount(doc.getBookmarkCount())
                 .build();
+    }
+
+    //북마크 add : db 반영 -> es 실시간 업데이트
+    /**
+     * [WHAT] 북마크 ADD 시 : ES의 bookmarkCount 필드를 스크립트로 실시간 업데이트
+     * [WHY] 북마크 추가/삭제 시 상세조회 화면에 즉시 반영하기 위해
+     *      (새벽 배치가 정합성을 보장하지만, 실시간 반영이 UX상 필요 -> 조회중심 서비스라 부하 걱정 X)
+     * [흐름]
+     * 1. UpdateRequest 빌드 (index + doumnet id + script)
+     * 2. ElasticsearchClient로 ES에 전송
+     * 3. 실패 시, wan로그만 남기고 예외 전파 X
+     *      -> ES 업데이트는 보조 역할, DB 북마크 저장이 메인이므로
+     *      -> 실패해도 사용자에게 에러 응답 불필요
+     *
+     * @param esId ES document Id (=DB storeId를 String으로 변환한 값)
+     * @param delta 북마크 추가 시 +1, 삭제 시 -1 (추가 삭제 ES 전송 메서드 공유)
+     */
+    public void incrementBookmarkCount(String esId, int delta) {
+        UpdateRequest<Map,Map> request = UpdateRequest.of(u->u
+                .index("stores")
+                .id(esId)
+                .script(s->s
+                        //[WHAT] 스크립트로 현재값 기반 연산
+                        //[WHY] .doc() 덮어쓰기 방식은 동시 요청 시 값 유실 위험
+                        //      스크립트는 ES내부에서 읽기-수정-쓰기를 원자적으로 처리
+                        //      Math.max(0,...) 로, 음수 방지 (DB/ES 불일치 상태 방어)
+                        .source("ctx._source.bookmarkCount = Math.max(0, ctx._source.bookmarkCount + params.delta)")
+                        //[WHAT] delta 값을 파라미터로 분리해서 주입
+                        // [WHY]  스크립트에 값을 직접 문자열로 붙이면 인젝션 위험
+                        //        JsonData.of() 로 Java int → ES JSON 타입 변환
+                        .params(Map.of("delta", JsonData.of(delta)))
+                )
+        );
+        try{
+            elasticsearchClient.update(request, Map.class);
+        }catch (IOException e) {
+            log.warn("es bookmarkCount update failed = {}, delta={}", esId, delta, e);
+        }
+    }
+
+    //ES 동기화용 <- dB 값으로 덮어쓰기
+    public void setBookmarkCount(String esId, Long count) {
+        UpdateRequest<Map,Map> request = UpdateRequest.of(u->u
+                .index("stores")
+                .id(esId)
+                .doc(Map.of("bookmarkCount", count))
+        );
+        try{
+            elasticsearchClient.update(request, Map.class);
+        } catch (IOException e) {
+            log.warn("es bookmarkCount db sync failed = {}", esId, e);
+        }
     }
 }

@@ -34,6 +34,7 @@ public class JwtProvider {
     };
 
     //jwt 생성 - at
+    //payload builder (subject, role, iat, exp) + 비밀키 담기
     public String generateAccessToken(Long userId, Role role) {
         return Jwts.builder()
                 .subject(userId.toString())
@@ -81,7 +82,7 @@ public class JwtProvider {
 
     public Long getUserIdFromToken(String token) {
         Claims claims = pasrseClaim(token);
-        return claims.get("userId", Long.class);
+        return Long.parseLong(claims.getSubject());
     }
 
     public String getRoleFromToken(String token) {

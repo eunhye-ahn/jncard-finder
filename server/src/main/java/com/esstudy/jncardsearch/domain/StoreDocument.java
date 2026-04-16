@@ -38,7 +38,7 @@ import org.springframework.data.elasticsearch.core.suggest.Completion;
 @Builder
 public class StoreDocument {
     @Id
-    private String id; //UUID 자동생성
+    private String id;
 
     @Field(type = FieldType.Long)
     private Long storeId;

@@ -46,6 +46,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             //헤더에서 토큰 정보 추출
             String token = resolveToken(request);
+            System.out.println(token);
 
             if (request.getRequestURI().equals("/auth/reissue")) {
                 filterChain.doFilter(request, response);

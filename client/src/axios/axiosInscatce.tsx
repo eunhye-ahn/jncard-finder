@@ -34,7 +34,6 @@ api.interceptors.response.use(
         } else {
             alert("네트워크 오류 발생")
         }
-
         return Promise.reject(error)
     }
 )

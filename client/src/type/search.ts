@@ -29,5 +29,6 @@ export interface StoreDetailResponse {
     bank: string,
     avgRating: number,
     reviewCount: number,
-    bookmarkCount: number
+    bookmarkCount: number,
+    isBookmarked: boolean
 }

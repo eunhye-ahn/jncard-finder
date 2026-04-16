@@ -17,4 +17,5 @@ public class StoreDetailResponse {
     private Float avgRating;
     private Integer reviewCount;
     private Integer bookmarkCount;
+    private boolean isBookmarked;
 }
