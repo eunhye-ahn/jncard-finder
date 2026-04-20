@@ -1,5 +1,7 @@
+import axios from "axios"
 import type { LoginRequest, TokenResponse } from "../type/auth"
-import type { BookmarkStatus } from "../type/bookmark"
+import type { BookmarkListResponse, BookmarkStatus } from "../type/bookmark"
+import type { MyReivewResponse, ReviewRequest, StoreReviewResponse } from "../type/review"
 import type { SearchRequest, SearchResponse, StoreDetailResponse } from "../type/search"
 import type { SignUpRequest } from "../type/user"
 import { api } from "./axiosInscatce"
@@ -27,7 +29,7 @@ export const SignUp = (request: SignUpRequest) => {
 }
 
 export const Logout = () => {
-    return api.post("/auth/logout")
+    return api.post<void>("/auth/logout")
 }
 
 export const getStoreDetail = (storeId: number) => {
@@ -36,4 +38,31 @@ export const getStoreDetail = (storeId: number) => {
 
 export const toggleBookmark = (storeId: number) => {
     return api.post<BookmarkStatus>(`/bookmarks/${storeId}`)
+}
+
+export const getMyBookmarks = () => {
+    return api.get<BookmarkListResponse[]>("/bookmarks")
+}
+
+export const createReview = (storeId: number, request: ReviewRequest) => {
+    return api.post<MyReivewResponse>(`/reviews/${storeId}`, request)
+}
+
+export const deleteReview = (reviewId: number) => {
+    return api.delete<void>(`/reviews/${reviewId}`)
+}
+
+export const getStoreReviews = (storeId: number) => {
+    return api.get<StoreReviewResponse[]>(`/reviews/${storeId}`)
+}
+
+export const getMyReviews = () => {
+    return api.get<MyReivewResponse[]>("/reviews/my")
+}
+
+//새로고침, at만료 시 호출 - 무한루프 방지 순수 axios 사용
+export const reissue = () => {
+    return axios.post<TokenResponse>("http://localhost:8080/api/auth/reissue", null, {
+        withCredentials: true
+    });
 }

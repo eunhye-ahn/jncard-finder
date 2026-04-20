@@ -48,7 +48,12 @@ public class GlobalExceptionHandler {
     //uique 제약조건
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        log.warn("DB unique error:{}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        log.warn("DB 제약조건 error:{}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(
+                        409,
+                        ErrorCode.DUPLICATE_DB.name(),
+                        ErrorCode.DUPLICATE_DB.getMessage()
+                ));
     }
 }

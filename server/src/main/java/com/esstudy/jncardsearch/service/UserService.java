@@ -7,7 +7,11 @@ import com.esstudy.jncardsearch.exception.CustomException;
 import com.esstudy.jncardsearch.exception.ErrorCode;
 import com.esstudy.jncardsearch.jwt.JwtProvider;
 import com.esstudy.jncardsearch.repository.UserRepository;
+import com.esstudy.jncardsearch.util.CookieUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +22,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RedisService redisService;
+    private final HttpServletResponse httpServletResponse;
+    private final CookieUtil cookieUtil;
 
     //회원가입
-    public TokenResponse save(SignUpRequest request) {
+    public TokenResponse save(SignUpRequest request, HttpServletResponse response) {
         //email 유효성 검사
         if(userRepository.existsByEmail(request.getEmail())) {
             throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
@@ -40,6 +46,10 @@ public class UserService {
         //rt 저장
         redisService.saveRefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshExpiration());
 
-        return new TokenResponse(accessToken);
+        //브라우저 쿠키 담기
+        ResponseCookie rtc = cookieUtil.createRTCookie(refreshToken);
+        response.addHeader("Set-Cookie", rtc.toString());
+
+        return new TokenResponse(accessToken, refreshToken);
     }
 }

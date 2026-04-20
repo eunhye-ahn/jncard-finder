@@ -2,7 +2,9 @@ package com.esstudy.jncardsearch.jwt;
 
 import com.esstudy.jncardsearch.exception.CustomException;
 import com.esstudy.jncardsearch.exception.ErrorCode;
+import com.esstudy.jncardsearch.exception.ErrorResponse;
 import com.esstudy.jncardsearch.service.RedisService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +34,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final RedisService redisService;
+    private final ObjectMapper objectMapper;
 
     public String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
@@ -48,7 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = resolveToken(request);
             System.out.println(token);
 
-            if (request.getRequestURI().equals("/auth/reissue")) {
+            if (request.getRequestURI().equals("/api/auth/reissue")) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -73,9 +76,15 @@ public class JwtFilter extends OncePerRequestFilter {
         catch (Exception e) {
             //mvc밖에서 예외처리 형식 통일화 보충***
             SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().println(e.getMessage());
+            response.getWriter().println(
+                    objectMapper.writeValueAsString(
+                            new ErrorResponse(500,
+                                    ErrorCode.INTERNAL_SERVER_ERROR.name(),
+                                    e.getMessage())
+                    )
+            );
             return;
         }
         filterChain.doFilter(request, response);

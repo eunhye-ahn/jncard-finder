@@ -8,6 +8,7 @@ import { SearchTopRank } from "../components/search/SearchTopRank";
 import { KakaoMap } from "../components/search/KakaoMap";
 import { useNavigate } from "react-router-dom";
 import { StoreDetail } from "../components/search/StoreDetail";
+import { BookmarkList } from "../components/search/BookmarkList";
 
 //상태만 들고 있기 자식들에게 prop으로 내려주기
 
@@ -105,11 +106,13 @@ export const SearchPage = () => {
                 onLoadMore={handleLoadMore}
                 onStoreClick={handleStoreClick} />
             {selectedStore &&
-                <StoreDetail selectedStoreId={selectedStore.storeId} />
+                <StoreDetail
+                    selectedStoreId={selectedStore.storeId} />
             }
             <SearchTopRank
                 rank={rank}
                 onSearch={handleSearch} />
+            {/* <BookmarkList /> */}
             <KakaoMap selectedStore={selectedStore} />
         </div>
     )

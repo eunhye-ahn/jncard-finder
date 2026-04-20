@@ -37,7 +37,7 @@ public class AuthService {
         //RT redis 저장
         redisService.saveRefreshToken(user.getId(),refreshToken, jwtProvider.getRefreshExpiration());
 
-        return new TokenResponse(accessToken);
+        return new TokenResponse(accessToken, refreshToken);
     }
 
     //로그아웃
@@ -48,5 +48,28 @@ public class AuthService {
         //rt 삭제
         Long userId = jwtProvider.getUserIdFromToken(accessToken);
         redisService.deleteRefreshToken(userId);
+    }
+
+    //at+rt재발급
+    public TokenResponse reissue(String refreshToken) {
+        //토큰검증
+        jwtProvider.validateToken(refreshToken);
+
+        //유저 아이디 추출
+        Long userId = jwtProvider.getUserIdFromToken(refreshToken);
+
+        //redis에서 rt 확인
+        String savedRT = redisService.getRefreshToken(userId);
+        if(savedRT == null || !savedRT.equals(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        //유저조회
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        //at 재발급
+        String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole());
+
+        return new TokenResponse(newAccessToken, refreshToken);
     }
 }

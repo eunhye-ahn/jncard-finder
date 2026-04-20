@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/search/**", "/api/reviews/{storeId}").permitAll()
                         .anyRequest().authenticated()
                 )
                 //** 위에서 내려주는 에러메시지 출력하는거 별로?
@@ -58,7 +58,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST"));
+        config.setAllowedMethods(List.of("GET", "POST","DELETE","PUT"));
         config.setAllowedHeaders(List.of("*"));
 
         config.setAllowCredentials(true);

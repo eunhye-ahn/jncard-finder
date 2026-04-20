@@ -3,6 +3,7 @@ package com.esstudy.jncardsearch.controller;
 import com.esstudy.jncardsearch.dto.SignUpRequest;
 import com.esstudy.jncardsearch.dto.TokenResponse;
 import com.esstudy.jncardsearch.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/api/auth/signup")
-    public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignUpRequest request) {
-        TokenResponse token = userService.save(request);
+    public ResponseEntity<TokenResponse> signup(@Valid @RequestBody SignUpRequest request,
+                                                HttpServletResponse response) {
+        TokenResponse token = userService.save(request, response);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

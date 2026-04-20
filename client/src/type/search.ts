@@ -30,5 +30,5 @@ export interface StoreDetailResponse {
     avgRating: number,
     reviewCount: number,
     bookmarkCount: number,
-    isBookmarked: boolean
+    bookmarked: boolean
 }

@@ -3,6 +3,7 @@ package com.esstudy.jncardsearch.service;
 import com.esstudy.jncardsearch.domain.Bookmark;
 import com.esstudy.jncardsearch.domain.Store;
 import com.esstudy.jncardsearch.domain.User;
+import com.esstudy.jncardsearch.dto.BookmarkListResponse;
 import com.esstudy.jncardsearch.dto.BookmarkStatus;
 import com.esstudy.jncardsearch.exception.CustomException;
 import com.esstudy.jncardsearch.exception.ErrorCode;
@@ -12,6 +13,8 @@ import com.esstudy.jncardsearch.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +57,21 @@ public class BookmarkService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(()->new CustomException(ErrorCode.STORE_NOT_FOUND));
         return bookmarkRepository.existsByUserAndStore(user, store);
+    }
+
+    public List<BookmarkListResponse> getMyBookmark(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+
+        return bookmarkRepository.findByUserWithStore(user)
+                .stream()
+                .map(b-> BookmarkListResponse.builder()
+                        .bookmarkId(b.getId())
+                        .storeName(b.getStore().getStoreName())
+                        .category(b.getStore().getCategory())
+                        .address(b.getStore().getAddress())
+                        .build()
+                ).toList();
     }
 }

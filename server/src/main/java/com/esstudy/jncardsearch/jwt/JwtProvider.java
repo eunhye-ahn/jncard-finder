@@ -8,6 +8,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -75,9 +76,28 @@ public class JwtProvider {
     };
 
     //jwt 검증 (파싱 결과물로 검증 진행)
-    public void validateToken(String token) {
+
+    /**
+     *
+     * parseClaim에서 jwt 라이브러리가 자체적으로 예외를 던짐
+     *
+     * jwt 라이브러리 예외 종류
+     * ExpiredJwtException  → 만료된 토큰
+     * MalformedJwtException → 형식이 잘못된 토큰 (위조 등)
+     * SignatureException    → 서명 불일치
+     * UnsupportedJwtException → 지원하지 않는 토큰
+     *
+     */
+    public boolean validateToken(String token) {
         if(token == null) throw new CustomException(ErrorCode.INVALID_TOKEN);
-        pasrseClaim(token);
+        try{
+            pasrseClaim(token);
+            return true;
+        }catch(ExpiredJwtException e){
+            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+        }catch(JwtException e){
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
     }
 
     public Long getUserIdFromToken(String token) {

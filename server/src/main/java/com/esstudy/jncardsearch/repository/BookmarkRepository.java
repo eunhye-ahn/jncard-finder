@@ -6,6 +6,7 @@ import com.esstudy.jncardsearch.domain.User;
 import com.esstudy.jncardsearch.dto.BookmarkCountDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -29,4 +30,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
      */
     @Query("select b.store.id as storeId, count(b) as count from Bookmark b group by b.store.id")
     List<BookmarkCountDto> countGroupByStoreId();
+
+    //n+1 방지 -> 조인패치
+    @Query("select b from Bookmark b join fetch b.store where b.user = :user")
+    List<Bookmark> findByUserWithStore(@Param("user") User user);
 }

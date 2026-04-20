@@ -15,6 +15,16 @@ public enum ErrorCode {
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다"),
 
+    //권한
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "접근 권한이 없습니다"),
+
+    //db제약조건
+    DUPLICATE_DB(HttpStatus.CONFLICT, "이미 존재하는 데이터입니다"),
+
+    //review
+    DUPLICATE_REVIEW(HttpStatus.CONFLICT, "작성된 리뷰가 있습니다"),
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다"),
+
     //user
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "이메일/비밀번호가 틀렸습니다"),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "중복된 이메일 입니다"),

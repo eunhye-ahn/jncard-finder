@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
 import type { ErrorResponse } from "../type/error";
+import { reissue } from "./api";
 
 //create생성 -기본 url, 쿠키 자동설정
 export const api = axios.create({
@@ -8,7 +9,7 @@ export const api = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    //쿠키설정 나중에
+    withCredentials: true
 })
 
 //interceptor(res/req)
@@ -26,9 +27,23 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        const errorResponse = error.response?.data as ErrorResponse
 
+    async (error) => {
+        if (error.response.status === 401 && !error.config._retry) {
+            error.config._retry = true; //reissue 실패시, 무환순환 방지
+            try {
+                const res = await reissue();
+                //훅은 리액트 컴포넌트 또는 커스텀 훅에서만 호출 가능
+                useAuthStore.getState().setAccessToken(res.data.accessToken);
+                return api(error.config)
+            } catch (e) {
+                useAuthStore.getState().setAccessToken(null);
+                window.location.href = "/login";
+                return Promise.reject(e);
+            }
+        }
+
+        const errorResponse = error.response?.data as ErrorResponse
         if (errorResponse) {
             alert(errorResponse.message)
         } else {
