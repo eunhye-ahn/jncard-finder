@@ -1,5 +1,6 @@
 package com.esstudy.jncardsearch.infrastructure;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.esstudy.jncardsearch.domain.Store;
 import com.esstudy.jncardsearch.domain.StoreDocument;
 import com.esstudy.jncardsearch.repository.StoreRepository;
@@ -11,7 +12,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.data.elasticsearch.core.suggest.Completion;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -20,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * [WHAT] 파싱한 데이터 ES에 저장
@@ -54,22 +56,34 @@ public class ExcelStoreLoader {
     // ES 저장소 주입 -> 파싱한 데이터를 ES에 저장하기 위해
     private final StoreSearchRepository storeSearchRepository;
     private final StoreRepository storeRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final ElasticsearchOperations elasticsearchOperations;
+    private final ElasticsearchClient elasticsearchClient;
 
     public void loadAll(String filePath) throws IOException {
         long totalStart = System.currentTimeMillis();
-
+        disableRefresh();
         loadStores(filePath,"광주은행","광주은행");
         loadStores(filePath,"농협은행","농협은행");
         loadStores(filePath, "성능테스트", "성능테스트");
-
+        enableRefresh();
         long totalEnd = System.currentTimeMillis();
-        log.info("[total complete] {}ms", totalEnd - totalStart);
+        log.info("[all data saved] : {}ms", totalEnd - totalStart);
     }
 
     public void loadStores(String filePath, String sheetName, String bank) throws IOException {
         // 순서보장, 중복저장허용
 
         long t1 = System.currentTimeMillis();
+
+        //카테고리 맵 로드 - XSSFWorkbook => 행 수 적으므로
+        Map<String, String> categories;
+        try (InputStream is = getClass().getResourceAsStream(filePath);
+             Workbook workbook = new XSSFWorkbook(is)) {
+            categories = loadCategoryMap(workbook);
+        }
+
+        //SAX 스트리밍으로 데이터 시트 파싱 => 대규모 데이터 시, OOM 상황 방지
         List<Store> stores = new ArrayList<>();
 
         // 파일 읽기
@@ -107,19 +121,44 @@ public class ExcelStoreLoader {
             long t2 = System.currentTimeMillis();
             log.info("[excel parsing done] {}ms, {}건", t2 - t1, stores.size());
 
-            // DB INSERT
-            int chunkSize = 1000;
-            for(int i=0;i<stores.size();i+=chunkSize){
-                List<Store> chunk = stores.subList(i,Math.min(i+chunkSize, stores.size()));
-                storeRepository.saveAll(chunk);
-                log.info("[db save chunk] {}/{}", Math.min(i+chunkSize, stores.size()), chunk.size());
-            }
+            // DB INSERT -
+            //1. 전체 insert
 //            storeRepository.saveAll(stores);
+            // 2. 청크단위 insert
+//            int chunkSize = 1000;
+//            for(int i=0;i<stores.size();i+=chunkSize){
+//                List<Store> chunk = stores.subList(i,Math.min(i+chunkSize, stores.size()));
+//                storeRepository.saveAll(chunk);
+//                log.info("[db save chunk] {}/{}", Math.min(i+chunkSize, stores.size()), chunk.size());
+//            }
+
+
+            //3. jdbc batchUpdate로 insert
+            String sql = """
+                        INSERT INTO store(store_name, sido, address, category, bank,
+                                                  avg_rating, review_count, bookmark_count)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """;
+
+            jdbcTemplate.batchUpdate(sql, stores, 1000, (ps, s) -> {
+                ps.setString(1, s.getStoreName());
+                ps.setString(2, s.getSido());
+                ps.setString(3, s.getAddress());
+                ps.setString(4, s.getCategory());
+                ps.setString(5, s.getBank());
+                ps.setFloat(6, s.getAvgRating());
+                ps.setInt(7, s.getReviewCount());
+                ps.setInt(8, s.getBookmarkCount());
+            });
             long t3 = System.currentTimeMillis();
             log.info("[DB save done] {}ms", t3 - t2);
 
 
-            List<StoreDocument> storeEs = stores.stream()
+            List<Store> savedStores = storeRepository.findByBank(bank);
+            long t3_1 = System.currentTimeMillis();
+            log.info("[{}] findByBank done -> {}ms, {}건",bank, t3_1-t3, savedStores.size());
+
+            List<StoreDocument> storeEs = savedStores.stream()
                     .map(s-> StoreDocument.builder()
                             .id(String.valueOf(s.getId())) //redinex시, 아이디 덮어쓰기
                             .storeId(s.getId())
@@ -134,8 +173,12 @@ public class ExcelStoreLoader {
                             .build()
                     )
                     .toList();
+            long t3_2 = System.currentTimeMillis();
+            log.info("[{}] stream mapping done -> {}ms",bank, t3_2-t3_1);
+
 
             // ES INSERT
+            int chunkSize = 5000;
             for(int i=0;i<stores.size();i+=chunkSize){
                 List<StoreDocument> chunk = storeEs.subList(i,Math.min(i+chunkSize, storeEs.size()));
                 storeSearchRepository.saveAll(chunk);
@@ -143,7 +186,7 @@ public class ExcelStoreLoader {
             }
 
             long t4 = System.currentTimeMillis();
-            log.info("[ES indexing done] {}ms", t4 - t3);
+            log.info("[ES indexing done] {}ms", t4 - t3_2);
 
             log.info("[{}] bank {}ms", bank, t4 - t1);
         }
@@ -179,5 +222,24 @@ public class ExcelStoreLoader {
             }
         }
         return map;
+    }
+
+    //es refresh 끄기
+    private void disableRefresh() throws IOException{
+        elasticsearchClient.indices().putSettings(r -> r
+                .index("stores")
+                .settings(s -> s.refreshInterval(t -> t.time("-1")))
+        );
+        log.info("[ES] refresh_interval disabled");
+    }
+
+    //es refresh 켜기
+    private void enableRefresh() throws IOException{
+        elasticsearchClient.indices().putSettings(r -> r
+                .index("stores")
+                .settings(s -> s.refreshInterval(t -> t.time("1s")))
+        );
+        elasticsearchOperations.indexOps(IndexCoordinates.of("stores")).refresh();
+        log.info("[ES] refresh enabled");
     }
 }
