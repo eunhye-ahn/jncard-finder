@@ -302,4 +302,35 @@ public class StoreService {
             log.warn("es bookmarkCount db sync failed = {}", esId, e);
         }
     }
+
+    //리뷰 실시간
+    public void incrementReviewCount(String esId, int delta) {
+        UpdateRequest<Map,Map> request = UpdateRequest.of(u->u
+        .index("stores")
+                .id(esId)
+                .script(s->s
+                        .source("ctx._source.reviewCount = Math.max(0, ctx._source.reviewCount + params.delta)")
+                        .params(Map.of("delta", JsonData.of(delta)))
+                )
+        );
+        try{
+            elasticsearchClient.update(request, Map.class);
+        } catch (IOException e) {
+            log.warn("es reviewCount update failed = {}, delta={}", esId, delta, e);
+        }
+    }
+
+    //리뷰 스케줄러 동기화
+    public void setReviewCount(String esId, Long count) {
+        UpdateRequest<Map,Map> request = UpdateRequest.of(u->u
+                .index("stores")
+                .id(esId)
+                .doc(Map.of("reviewCount", count))
+        );
+        try{
+            elasticsearchClient.update(request, Map.class);
+        } catch (IOException e) {
+            log.warn("es reviewCount db sync failed = {}", esId, e);
+        }
+    }
 }

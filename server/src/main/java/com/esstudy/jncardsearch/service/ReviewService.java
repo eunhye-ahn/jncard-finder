@@ -22,6 +22,7 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final ReviewRepository reviewRepository;
+    private final StoreService storeService;
 
     //리뷰작성
     public MyReviewResponse addReview(ReviewRequest request, Long userId, Long storeId) {
@@ -48,6 +49,8 @@ public class ReviewService {
                         .rating(request.getRating())
                 .build());
 
+        storeService.incrementReviewCount(String.valueOf(storeId), +1);
+
         return MyReviewResponse.builder()
                 .reviewId(review.getId())
                 .storeName(review.getStore().getStoreName())
@@ -58,7 +61,7 @@ public class ReviewService {
     }
 
     //review 삭제
-    public void deleteReview(Long reviewId, Long userId){
+    public void deleteReview(Long reviewId, Long userId, Long storeId) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
@@ -74,6 +77,8 @@ public class ReviewService {
 
         //리뷰삭제
         reviewRepository.deleteById(reviewId);
+
+        storeService.incrementReviewCount(String.valueOf(storeId), -1);
     }
 
     //특정 가맹점의 review 조회

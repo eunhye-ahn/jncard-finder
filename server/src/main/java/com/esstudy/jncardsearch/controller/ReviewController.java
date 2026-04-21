@@ -33,8 +33,8 @@ public class ReviewController {
 
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(@AuthenticationPrincipal Long userId,
-                                                         @PathVariable Long reviewId) {
-        reviewService.deleteReview(reviewId, userId);
+                                                         @PathVariable Long reviewId, @RequestParam Long storeId) {
+        reviewService.deleteReview(reviewId, userId, storeId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

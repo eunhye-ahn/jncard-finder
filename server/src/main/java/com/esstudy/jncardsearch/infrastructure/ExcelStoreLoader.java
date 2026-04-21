@@ -56,12 +56,20 @@ public class ExcelStoreLoader {
     private final StoreRepository storeRepository;
 
     public void loadAll(String filePath) throws IOException {
+        long totalStart = System.currentTimeMillis();
+
         loadStores(filePath,"광주은행","광주은행");
         loadStores(filePath,"농협은행","농협은행");
+        loadStores(filePath, "성능테스트", "성능테스트");
+
+        long totalEnd = System.currentTimeMillis();
+        log.info("[total complete] {}ms", totalEnd - totalStart);
     }
 
     public void loadStores(String filePath, String sheetName, String bank) throws IOException {
         // 순서보장, 중복저장허용
+
+        long t1 = System.currentTimeMillis();
         List<Store> stores = new ArrayList<>();
 
         // 파일 읽기
@@ -95,10 +103,22 @@ public class ExcelStoreLoader {
                         .build();
                 stores.add(store);
             }
-            storeRepository.saveAll(stores);
-            log.info("DB 저장 완료 : {}건", stores.size());
 
-            // es에 저장
+            long t2 = System.currentTimeMillis();
+            log.info("[excel parsing done] {}ms, {}건", t2 - t1, stores.size());
+
+            // DB INSERT
+            int chunkSize = 1000;
+            for(int i=0;i<stores.size();i+=chunkSize){
+                List<Store> chunk = stores.subList(i,Math.min(i+chunkSize, stores.size()));
+                storeRepository.saveAll(chunk);
+                log.info("[db save chunk] {}/{}", Math.min(i+chunkSize, stores.size()), chunk.size());
+            }
+//            storeRepository.saveAll(stores);
+            long t3 = System.currentTimeMillis();
+            log.info("[DB save done] {}ms", t3 - t2);
+
+
             List<StoreDocument> storeEs = stores.stream()
                     .map(s-> StoreDocument.builder()
                             .id(String.valueOf(s.getId())) //redinex시, 아이디 덮어쓰기
@@ -114,8 +134,18 @@ public class ExcelStoreLoader {
                             .build()
                     )
                     .toList();
-            storeSearchRepository.saveAll(storeEs);
-            log.info("ES 저장 완료 : {}건", storeEs.size());
+
+            // ES INSERT
+            for(int i=0;i<stores.size();i+=chunkSize){
+                List<StoreDocument> chunk = storeEs.subList(i,Math.min(i+chunkSize, storeEs.size()));
+                storeSearchRepository.saveAll(chunk);
+                log.info("[es indexing chunk] {}/{}", Math.min(i+chunkSize, storeEs.size()), chunk.size());
+            }
+
+            long t4 = System.currentTimeMillis();
+            log.info("[ES indexing done] {}ms", t4 - t3);
+
+            log.info("[{}] bank {}ms", bank, t4 - t1);
         }
     }
 
