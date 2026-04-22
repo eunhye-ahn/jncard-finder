@@ -18,7 +18,7 @@ export const LoginPage = () => {
             .then((res) => {
                 setAccessToken(res.data.accessToken)
                 console.log(res.data)
-                navigate("/search");
+                navigate("/");
             })
             .catch((err) => {
                 console.log(err)

@@ -75,15 +75,6 @@ public class ExcelStoreLoader {
         // 순서보장, 중복저장허용
 
         long t1 = System.currentTimeMillis();
-
-        //카테고리 맵 로드 - XSSFWorkbook => 행 수 적으므로
-        Map<String, String> categories;
-        try (InputStream is = getClass().getResourceAsStream(filePath);
-             Workbook workbook = new XSSFWorkbook(is)) {
-            categories = loadCategoryMap(workbook);
-        }
-
-        //SAX 스트리밍으로 데이터 시트 파싱 => 대규모 데이터 시, OOM 상황 방지
         List<Store> stores = new ArrayList<>();
 
         // 파일 읽기

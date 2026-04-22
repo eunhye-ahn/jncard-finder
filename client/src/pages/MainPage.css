@@ -1,0 +1,17 @@
+.main-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar-container {
+    width: 400px;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.map-container {
+    flex: 1;
+}

@@ -32,12 +32,18 @@ export const SearchBar = ({ onSearch }: SearchBarProps) => {
             <input type="text"
                 value={q}
                 onChange={handleChange} />
-            <button onClick={() => onSearch(q)}>검색</button>
+            <button onClick={() => {
+                onSearch(q)
+                setSuggestions([]);
+            }}>검색</button>
             {suggestions.length > 0 && (
                 <div>
                     {suggestions.map(s => (
                         <div key={s}
-                            onClick={() => onSearch(s)}>
+                            onClick={() => {
+                                onSearch(s)
+                                setSuggestions([]);
+                            }}>
                             {s}
                         </div>
                     ))}

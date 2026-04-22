@@ -8,9 +8,10 @@ type StoreReviewProps = {
 
 export const StoreReview = ({ storeId }: StoreReviewProps) => {
     const [storeReviews, setStoreReviews] = useState<StoreReviewResponse[]>([]);
-
+    const id = Number(storeId)
     useEffect(() => {
-        getStoreReviews(storeId)
+        if (isNaN(id)) return;
+        getStoreReviews(id)
             .then((res) => setStoreReviews(res.data))
     }, []);
 

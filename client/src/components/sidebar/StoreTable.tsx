@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import type { SearchResponse, Store } from "../../type/search"
 
 type StoreTableProps = Pick<SearchResponse, "stores" | "hasNext"> & {
@@ -6,6 +7,8 @@ type StoreTableProps = Pick<SearchResponse, "stores" | "hasNext"> & {
 }
 
 export const StoreTable = ({ stores, hasNext, onLoadMore, onStoreClick }: StoreTableProps) => {
+
+    const navigate = useNavigate();
 
     return (
         <div>
@@ -25,6 +28,7 @@ export const StoreTable = ({ stores, hasNext, onLoadMore, onStoreClick }: StoreT
                             <td>{store.storeName}</td>
                             <td>{store.sido}</td>
                             <td>{store.address}</td>
+                            <td onClick={() => navigate(`/${store.storeId}`)}>상세보기</td>
                         </tr>
                     )}
                 </tbody>

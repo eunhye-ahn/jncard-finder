@@ -11,6 +11,7 @@ export const StorePage = () => {
         getStoreDetail(Number(storeId))
             .then((res) => {
                 setStoreInfo(res.data);
+                console.log(res.data)
             })
     }, []);
 
@@ -23,7 +24,7 @@ export const StorePage = () => {
                 <p>({storeInfo.reviewCount})</p>
                 <p>{storeInfo.address}</p>
             </div>
-            <div >
+            <div>
                 <StoreReview storeId={storeInfo.storeId} />
             </div>
         </div>
