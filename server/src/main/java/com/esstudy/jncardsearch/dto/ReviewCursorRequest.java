@@ -1,15 +1,17 @@
 package com.esstudy.jncardsearch.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * @ModelAtrribute : NoArgs로 객체 만들고 setter로 값 주입
+ */
+
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor //modelattribute는 기본생성자 필요
+@Setter
+@AllArgsConstructor
 @Builder
 public class ReviewCursorRequest {
     private Float minRating;

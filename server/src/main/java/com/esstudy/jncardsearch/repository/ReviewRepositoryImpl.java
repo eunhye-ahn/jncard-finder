@@ -66,9 +66,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryCustom {
 
         //정렬조건
         OrderSpecifier<?> orderBy = switch(sort){
-          case "oldest" -> review.createdAt.asc();
-          case "rating" -> review.rating.desc();
-          default -> review.createdAt.desc();
+            case "latest" -> review.createdAt.desc();
+            case "oldest" -> review.createdAt.asc();
+            case "rating" -> review.rating.desc();
+            default -> review.createdAt.desc();
         };
 
         OrderSpecifier<Long> idOrder = sort.equals("oldest")

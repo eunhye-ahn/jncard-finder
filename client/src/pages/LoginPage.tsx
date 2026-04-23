@@ -35,16 +35,21 @@ export const LoginPage = () => {
                 <div>
                     <label>EMAIL</label>
                     <input type="email"
-                        onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} />
+                        onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+                        onBlur={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))} />
                 </div>
                 <div>
                     <label>PASSWORD</label>
                     <input type="password"
-                        onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} />
+                        onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                        onBlur={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))} />
                 </div>
                 <button>Login</button>
                 <button type="button"
-                    onClick={() => navigate("/signup")}>SignUp</button>
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        navigate("/signup")
+                    }}>SignUp</button>
             </form>
         </div>
     )

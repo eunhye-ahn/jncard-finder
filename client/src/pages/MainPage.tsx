@@ -10,7 +10,7 @@ import { useAuthStore } from "@/store/authStore"
 
 
 export const MainPage = () => {
-    const { accessToken } = useAuthStore();
+    const { accessToken, clearAccessToken } = useAuthStore();
     const [selectedStore, setSelectedStore] = useState<Store | null>(null);
     const [query, setQuery] = useState<SearchRequest>({
         q: null,
@@ -41,6 +41,7 @@ export const MainPage = () => {
     const handleLogout = () => {
         Logout()
             .then(() => {
+                clearAccessToken()
                 navigate("/login")
             })
     }

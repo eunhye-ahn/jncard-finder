@@ -25,7 +25,7 @@ export const StorePage = () => {
                 <p>{storeInfo.address}</p>
             </div>
             <div>
-                <StoreReview storeId={storeInfo.storeId} />
+                <StoreReview storeId={Number(storeId)} />
             </div>
         </div>
     )

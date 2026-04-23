@@ -39,7 +39,7 @@ public class JwtProvider {
     public String generateAccessToken(Long userId, Role role) {
         return Jwts.builder()
                 .subject(userId.toString())
-                .claim("role",role)
+                .claim("role",role.name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessExpiration))
                 .signWith(getSigningKey())
