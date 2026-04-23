@@ -1,6 +1,4 @@
 export interface ReviewRequest {
-    userId: number,
-    storeId: number,
     content: string,
     rating: number
 }
@@ -13,6 +11,22 @@ export interface StoreReviewResponse {
     reviewerName: string
 }
 
+export interface ReviewCursorRequest {
+    minRating: number | null,
+    sort: string,
+    cursorId: number | null,
+    cursorCreatedAt: string | null,
+    cursorRating: number | null
+}
+
+export interface ReviewCursorResponse {
+    reviews: StoreReviewResponse[],
+    nextCursorId: number,
+    nextCursorCreatedAt: string,
+    nextCursorRating: number,
+    hasNext: boolean
+}
+
 export interface MyReivewResponse {
     reviewId: number,
     content: string,
@@ -20,3 +34,4 @@ export interface MyReivewResponse {
     reviewDate: string,
     storeName: string
 }
+

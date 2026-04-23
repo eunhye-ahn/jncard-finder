@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -13,6 +14,6 @@ public class StoreReviewResponse {
     private Long reviewId;
     private String content;
     private Float rating;
-    private LocalDate reviewDate;
+    private LocalDateTime reviewDate;
     private String reviewerName;
 }

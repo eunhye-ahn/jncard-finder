@@ -1,9 +1,7 @@
 package com.esstudy.jncardsearch.controller;
 
 import com.esstudy.jncardsearch.domain.Review;
-import com.esstudy.jncardsearch.dto.MyReviewResponse;
-import com.esstudy.jncardsearch.dto.ReviewRequest;
-import com.esstudy.jncardsearch.dto.StoreReviewResponse;
+import com.esstudy.jncardsearch.dto.*;
 import com.esstudy.jncardsearch.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,8 +40,9 @@ public class ReviewController {
     }
 
     @GetMapping("/{storeId}")
-    public ResponseEntity<List<StoreReviewResponse>> getStoreReviews(@PathVariable Long storeId) {
-        List<StoreReviewResponse> result = reviewService.getReviewsByStore(storeId);
+    public ResponseEntity<ReviewCursorResponse> getStoreReviews(@PathVariable Long storeId,
+                                                                     @ModelAttribute ReviewCursorRequest request) {
+        ReviewCursorResponse result = reviewService.getReviewsByStore(storeId, request);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

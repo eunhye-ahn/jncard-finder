@@ -22,15 +22,19 @@ export const StoreTable = ({ stores, hasNext, onLoadMore, onStoreClick }: StoreT
                     </tr>
                 </thead>
                 <tbody>
-                    {stores.map((store, index) =>
+                    {stores.length > 0 ? stores.map((store, index) =>
                         <tr key={store.storeId} onClick={() => onStoreClick(store)}>
                             <td>{index + 1}</td>
                             <td>{store.storeName}</td>
                             <td>{store.sido}</td>
                             <td>{store.address}</td>
-                            <td onClick={() => navigate(`/${store.storeId}`)}>상세보기</td>
+                            <td onClick={() => navigate(`/store/${store.storeId}`)}>상세보기</td>
                         </tr>
-                    )}
+                    )
+                        : <tr>
+                            <td colSpan={4}>검색결과가 없습니다</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
             {hasNext &&

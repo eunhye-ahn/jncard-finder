@@ -4,6 +4,8 @@ import com.esstudy.jncardsearch.domain.Review;
 import com.esstudy.jncardsearch.domain.Store;
 import com.esstudy.jncardsearch.domain.User;
 import com.esstudy.jncardsearch.dto.MyReviewResponse;
+import com.esstudy.jncardsearch.dto.ReviewCursorRequest;
+import com.esstudy.jncardsearch.dto.ReviewCursorResponse;
 import com.esstudy.jncardsearch.dto.ReviewRequest;
 import com.esstudy.jncardsearch.dto.StoreReviewResponse;
 import com.esstudy.jncardsearch.exception.CustomException;
@@ -14,6 +16,8 @@ import com.esstudy.jncardsearch.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -23,6 +27,8 @@ public class ReviewService {
     private final StoreRepository storeRepository;
     private final ReviewRepository reviewRepository;
     private final StoreService storeService;
+
+    private static final int REVIEW_PAGE_SIZE = 10;
 
     //리뷰작성
     public MyReviewResponse addReview(ReviewRequest request, Long userId, Long storeId) {
@@ -82,20 +88,40 @@ public class ReviewService {
     }
 
     //특정 가맹점의 review 조회
-    public List<StoreReviewResponse> getReviewsByStore(Long storeId){
+    public ReviewCursorResponse getReviewsByStore(Long storeId, ReviewCursorRequest request){
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
-        return reviewRepository.findAllByStore(store).stream()
+        //스트림 정렬 : db에서 데이터를 전부 다 가져온 다음 메모리에서 정렬
+        // vs db정렬 : db안에서 정렬 후 정렬된 결과만 java로 로드 <- 인덱스활용으로 최적화도 가능
+        List<StoreReviewResponse> reviews = reviewRepository.findAllByStoreWithCursor(store,
+                        request.getMinRating(),
+                        request.getSort(),
+                        request.getCursorId(),
+                        request.getCursorCreatedAt(),
+                        request.getCursorRating(),
+                        REVIEW_PAGE_SIZE)
+                .stream()
                 .map(review -> StoreReviewResponse.builder()
                         .reviewId(review.getId())
                         .content(review.getContent())
                         .rating(review.getRating())
                         .reviewerName(review.getUser().getName())
-                        .reviewDate(review.getCreatedAt().toLocalDate())
+                        .reviewDate(review.getCreatedAt())
                         .build())
                 .toList();
+
+        //마지막 리뷰가 다음 커서
+        StoreReviewResponse last = reviews.isEmpty() ? null : reviews.get(reviews.size() - 1);
+
+        return ReviewCursorResponse.builder()
+                .reviews(reviews)
+                .nextCursorId(last != null ? last.getReviewId() : null)
+                .nextCursorCreatedAt(last != null ? last.getReviewDate() : null)
+                .nextCursorRating(last != null ? last.getRating() : null)
+                .hasNext(reviews.size() == REVIEW_PAGE_SIZE)
+                .build();
     }
 
     //내 review 조회

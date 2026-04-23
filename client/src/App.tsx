@@ -53,18 +53,25 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/:storeId" element={<StorePage />} />
+          <Route path="/store/:storeId" element={<StorePage />} />
         </Routes>
       </BrowserRouter>
-      /** ?????
-      3.ReactQueryDevtools
-      -개발 환경에서만 렌더됨 (프로덕션 빌드 시 자동제거)
-      -현재 캐시 상태, 쿼리 키, fresh/stale/inactive 상태를 UI로 확인가능
-      -initialIsOpen={false} // 처음에 닫힌 상태로 시작
-      */
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
 }
 
 export default App
+
+/**
+ * /:storeId /뒤에 오는 모든 것을 storeId로 받겠다
+ * /로 이동하니까 /:storeId가 "search"를 받아서 실행되어버림
+ * 경로 하나 더두어서 해결
+ */
+
+/** ?????
+*3.ReactQueryDevtools
+*-개발 환경에서만 렌더됨 (프로덕션 빌드 시 자동제거)
+*-현재 캐시 상태, 쿼리 키, fresh/stale/inactive 상태를 UI로 확인가능
+*-initialIsOpen={false} // 처음에 닫힌 상태로 시작
+*/

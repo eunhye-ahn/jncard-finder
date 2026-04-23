@@ -1,7 +1,7 @@
 import axios from "axios"
 import type { LoginRequest, TokenResponse } from "../type/auth"
 import type { BookmarkListResponse, BookmarkStatus } from "../type/bookmark"
-import type { MyReivewResponse, ReviewRequest, StoreReviewResponse } from "../type/review"
+import type { MyReivewResponse, ReviewCursorRequest, ReviewCursorResponse, ReviewRequest, StoreReviewResponse } from "../type/review"
 import type { SearchRequest, SearchResponse, StoreDetailResponse } from "../type/search"
 import type { SignUpRequest } from "../type/user"
 import { api } from "./axiosInscatce"
@@ -52,8 +52,8 @@ export const deleteReview = (reviewId: number) => {
     return api.delete<void>(`/reviews/${reviewId}`)
 }
 
-export const getStoreReviews = (storeId: number) => {
-    return api.get<StoreReviewResponse[]>(`/reviews/${storeId}`)
+export const getStoreReviews = (storeId: number, params: ReviewCursorRequest) => {
+    return api.get<ReviewCursorResponse>(`/reviews/${storeId}`, { params })
 }
 
 export const getMyReviews = () => {

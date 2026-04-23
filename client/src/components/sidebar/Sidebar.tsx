@@ -6,6 +6,8 @@ import { StoreTable } from "@/components/sidebar/StoreTable";
 import { SearchTopRank } from "@/components/sidebar/SearchTopRank";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query"
+import { MyReviewList } from "../review/MyReviewList";
+import { MyBookmarkList } from "../bookmark/MyBookmarkList";
 
 //상태만 들고 있기 자식들에게 prop으로 내려주기
 //useQuery-탄스택쿼리가 제공하는 훅, 어떤 데이터 가져올지 알려주면 로딩/에러/데이터 상태관리
@@ -24,21 +26,21 @@ export const Sidebar = ({ query, onStoreClick, onSearch }: SidebarProps) => {
     // });
     const {
         data: searchData,
-         isLoading: isSearchLoading, 
-         isError: isSearchError,
+        isLoading: isSearchLoading,
+        isError: isSearchError,
         fetchNextPage,
         hasNextPage
-        } = useInfiniteQuery({
+    } = useInfiniteQuery({
         queryKey: ["search", query], //query바뀔때 실행
-        queryFn: ({pageParam} : {pageParam: string | null})=>searchStore({...query, cursor: pageParam}).then(res=>res.data),
+        queryFn: ({ pageParam }: { pageParam: string | null }) => searchStore({ ...query, cursor: pageParam }).then(res => res.data),
         //에러나면 → isSearchError가 true가 됨
         initialPageParam: null,
         getNextPageParam: (lastPage: SearchResponse) => lastPage.hasNext ? lastPage.nextCursor : undefined,
     });
 
-    const {data: rankData, isLoading: isRankLoading, isError: isRankError} = useQuery({
+    const { data: rankData, isLoading: isRankLoading, isError: isRankError } = useQuery({
         queryKey: ["searchRank"], //마운트될때 실행
-        queryFn: ()=>SearchRank().then(res=>res.data)
+        queryFn: () => SearchRank().then(res => res.data)
     });
 
 
@@ -68,22 +70,25 @@ export const Sidebar = ({ query, onStoreClick, onSearch }: SidebarProps) => {
             </div>
             {activeTab === "result" && (
                 isSearchLoading ? <div>로딩중...</div>
-                : isSearchError ? <div>검색에 실패했습니다</div>
-                : <StoreTable
-                    stores={searchData?.pages.flatMap(page=>page.stores) ?? []} 
-                    hasNext={hasNextPage ?? false}
-                    onLoadMore={fetchNextPage}
-                    onStoreClick={onStoreClick} />
+                    : isSearchError ? <div>검색에 실패했습니다</div>
+                        : <StoreTable
+                            stores={searchData?.pages.flatMap(page => page.stores) ?? []}
+                            hasNext={hasNextPage ?? false}
+                            onLoadMore={fetchNextPage}
+                            onStoreClick={onStoreClick} />
             )}
             {activeTab === "rank" && (
                 isRankLoading ? <div>로딩중...</div>
-                : isRankError ? <div>인기순위를 불러오는 데 실패했습니다</div>
-                : <SearchTopRank
-                    rank={rankData ?? []}
-                    onSearch={onSearch} />
+                    : isRankError ? <div>인기순위를 불러오는 데 실패했습니다</div>
+                        : <SearchTopRank
+                            rank={rankData ?? []}
+                            onSearch={onSearch} />
             )}
             {activeTab === "my" && (
-                <div></div>
+                <div>
+                    <MyBookmarkList />
+                    <MyReviewList />
+                </div>
             )}
         </div>
     )
