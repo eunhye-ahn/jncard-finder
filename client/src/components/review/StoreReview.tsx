@@ -1,8 +1,9 @@
 import { createReview, getStoreReviews } from "../../axios/api";
-import { useQueryClient, useMutation, useQuery, useInfiniteQuery } from "@tanstack/react-query";
+import { useQueryClient, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReviewCursorRequest, ReviewCursorResponse } from "@/type/review";
+import '@/components/review/StoreReview.css'
 
 type StoreReviewProps = {
     storeId: number
@@ -11,7 +12,7 @@ type StoreReviewProps = {
 export const StoreReview = ({ storeId }: StoreReviewProps) => {
     const [minRating, setMinRating] = useState<number | null>(null)
     const [sort, setSort] = useState("latest")
-
+    const sentinelRef = useRef<HTMLDivElement>(null);
 
     /**
      * useInfiniteQuery
@@ -24,7 +25,7 @@ export const StoreReview = ({ storeId }: StoreReviewProps) => {
         isError
     } = useInfiniteQuery({
         //useEffect역할 + 캐시저장소
-        queryKey: ["storeReview", storeId, sort, minRating],
+        queryKey: ["storeReview", storeId, sort, minRating], //변경시 자동 리패치 (queryFn호출)
         //api 호출
         queryFn: ({ pageParam }: { pageParam: ReviewCursorRequest | null }) => getStoreReviews(storeId, {
             sort,
@@ -47,6 +48,23 @@ export const StoreReview = ({ storeId }: StoreReviewProps) => {
         //초기커서정보
         initialPageParam: null
     })
+
+    useEffect(() => {
+        if (!sentinelRef.current) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(sentinelRef.current);
+        return () => observer.disconnect();
+    }, [hasNextPage, fetchNextPage, isFetchingNextPage]) //다음페이지를 불러오도록 조건이 바뀌었을때 호출
+
 
     /**
      * useInfiniteQuery의 data 구조
@@ -71,6 +89,7 @@ export const StoreReview = ({ storeId }: StoreReviewProps) => {
      * 서버 데이터 변경 (delete, update, insert)
      * mutate : mutation 실행시키는 함수 - 버튼클릭같은 이벤트에 연결
      * isPending : 요청 진행 중이면 true
+     * 
      * onSuccess : 요청성공했을때 콜백
      * onError: 요청 실패했을때 콜백
      * 
@@ -82,6 +101,9 @@ export const StoreReview = ({ storeId }: StoreReviewProps) => {
         mutationFn: () => createReview(storeId, { rating, content }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["storeReview"] })
+            queryClient.invalidateQueries({ queryKey: ["storeDetail", String(storeId)] })
+            setRating(0)
+            setContent("")
             setOpen(false)
         },
         onError: (error) => {
@@ -90,17 +112,17 @@ export const StoreReview = ({ storeId }: StoreReviewProps) => {
 
 
     return (
-        <div>
+        <div className="review-container">
             <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger>
-                    <button>리뷰쓰기</button>
+                <DialogTrigger asChild>
+                    <button className="review-write-btn">리뷰쓰기</button>
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>리뷰 작성</DialogTitle>
                     </DialogHeader>
-                    <div>
-                        <div>
+                    <div className="review-dialog-body">
+                        <div className="review-stars">
                             {[1, 2, 3, 4, 5].map(star => (
                                 <span key={star} onClick={() => setRating(star)}>
                                     {star <= rating ? "★" : "☆"}
@@ -108,52 +130,53 @@ export const StoreReview = ({ storeId }: StoreReviewProps) => {
                             ))}
                         </div>
                         <textarea
+                            className="review-textarea"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="리뷰를 작성해주세요"
                         />
-                        <DialogClose asChild>
-                            <button onClick={() => mutate()}>
-                                {isPending ? "upload..." : "리뷰 등록"}
-                            </button>
-                        </DialogClose>
+                        <button className="review-submit-btn" onClick={() => mutate()} disabled={isPending}>
+                            {isPending ? "upload..." : "리뷰 등록"}
+                        </button>
                     </div>
                 </DialogContent>
             </Dialog>
 
-
-            <div>리뷰목록</div>
-            <select
-                value={sort ?? "latest"}
-                onChange={(e) => setSort(e.target.value)}
-            >
-                <option value="latest">최신순</option>
-                <option value="oldest">오래된순</option>
-                <option value="rating">별점순</option>
-            </select>
-            <button
-                onClick={() => setMinRating(prev => prev === 3.5 ? null : 3.5)}>
-                별점 3.5이상
-            </button>
-            {isLoading ? <div>로딩중...</div>
-                : isError ? <div>리뷰를 불러오는데 실패했습니다</div>
-                    : (reviews ?? []).length === 0 ? <div>작성된 리뷰가 없습니다</div>
-                        : (reviews ?? []).map(review => (
-                            <div key={review.reviewId}>
-                                <p>{review.reviewerName}</p>
-                                <p>{review.rating}</p>
-                                <p>{review.reviewDate}</p>
-                                <p>{review.content}</p>
-                            </div>
-                        ))
-            }
-            {hasNextPage && (
-                <button
-                    onClick={() => fetchNextPage()}
+            <div className="review-list-title">리뷰목록</div>
+            <div className="review-filter">
+                <select
+                    value={sort ?? "latest"}
+                    onChange={(e) => setSort(e.target.value)}
                 >
-                    {isFetchingNextPage ? "로딩중..." : "더보기"}
+                    <option value="latest">최신순</option>
+                    <option value="oldest">오래된순</option>
+                    <option value="rating">별점순</option>
+                </select>
+                <button
+                    className={`review-filter-btn ${minRating ? "active" : ""}`}
+                    onClick={() => setMinRating(prev => prev === 3.5 ? null : 3.5)}>
+                    별점 3.5이상
                 </button>
-            )}
-        </div>
-    )
+            </div>
+            {isLoading ? <div className="review-loading">로딩중...</div>
+                : isError ? <div className="review-loading">리뷰를 불러오는데 실패했습니다</div>
+                    : (reviews ?? []).length === 0 ? <div className="review-loading">작성된 리뷰가 없습니다</div>
+                        : <div className="review-list">
+                            {(reviews ?? []).map(review => (
+                                <div key={review.reviewId} className="review-item">
+                                    <div className="review-item-header">
+                                        <p className="review-item-name">{review.reviewerName}</p>
+                                        <p className="review-item-date">{review.reviewDate.split("T")[0]}</p>
+                                    </div>
+                                    <div className="review-item-stars">
+                                        {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
+                                    </div>
+                                    <p className="review-item-content">{review.content}</p>
+                                </div>
+                            ))}
+                        </div>
+            }
+            <div ref={sentinelRef} style={{ height: '1px' }} />
+            {isFetchingNextPage && <div className="review-loading">로딩중..</div>}
+        </div>)
 }

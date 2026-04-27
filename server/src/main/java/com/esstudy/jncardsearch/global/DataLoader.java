@@ -2,9 +2,11 @@ package com.esstudy.jncardsearch.global;
 
 import com.esstudy.jncardsearch.infrastructure.ExcelStoreLoader;
 import com.esstudy.jncardsearch.repository.*;
+import com.esstudy.jncardsearch.service.StoreSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,9 +45,13 @@ public class DataLoader implements CommandLineRunner {
     private final BookmarkRepository bookmarkRepository;
     private final JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private StoreSyncService syncService;
+
     // ApplicationRunner는 객체를 인자로 받음
     @Override
     public void run(String... args) throws Exception {
+
         if (storeSearchRepository.count() == 0 && storeRepository.count() == 0) {
             excelStoreLoader.loadAll("/data/stores.xlsx");
         } else {
@@ -54,6 +60,8 @@ public class DataLoader implements CommandLineRunner {
 
         loadUser();
         loadReviewsAndBookmarks();
+
+        //syncService.syncCountsToES();
     }
 
     private void loadUser() {
@@ -82,7 +90,7 @@ public class DataLoader implements CommandLineRunner {
 
     private void loadReviewsAndBookmarks() {
         log.info("Loading review");
-        if (reviewRepository.count() > 0) return;
+        if (reviewRepository.count() > 0 && bookmarkRepository.count()>0) return;
 
         Faker faker = new Faker(new Locale("ko"));
 

@@ -12,5 +12,5 @@ export const CATEGORY_LIST = [
 ]
 
 export const BANK_LIST = [
-    "광주은행", "농협은행"
+    "광주은행", "농협은행", "성능테스트"
 ]

@@ -14,8 +14,9 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
  * 
  * 1. QueryClient 생성
  * - 앱 전체의 캐시 저장소 + 기본 설정을 담당하는 두뇌
- * - staleTime: 5분 -> 5분 안에 같은 요청 오면 API 안 부르고 캐시 사용
- * - retry: 1 -> API 실패 시 1번만 재시도
+ * - staleTime: 5분 -> 5분 안에 같은 요청 오면 API 안 부르고 캐시 사용 
+ *          -  실시간이 필요한 부분 강제 캐시 적용 코드 필요
+ * - retry: 1 -> API 실패 시 1번만 재시도 -
  */
 
 const queryClient = new QueryClient({

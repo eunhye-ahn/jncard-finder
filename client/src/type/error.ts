@@ -1,5 +1,9 @@
-export interface ErrorResponse {
-    status: number,
-    code: string,
-    message: string
+export interface ApiError {
+    status: number;
+    code: string;
+    message: string;
+}
+
+export class AppError extends Error {
+
 }

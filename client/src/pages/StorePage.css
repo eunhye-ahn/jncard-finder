@@ -1,0 +1,57 @@
+/* StorePage.css */
+
+.store-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+/* 가게 정보 카드 */
+.store-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.store-name {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.store-category {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+.store-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.store-avg-rating {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff6b35;
+}
+
+.store-rating-stars {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.store-review-count {
+    font-size: 13px;
+    color: #888;
+}
+
+.store-address {
+    font-size: 14px;
+    color: #555;
+    margin-top: 8px;
+}
